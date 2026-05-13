@@ -18,12 +18,9 @@ class AuthDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new auth document mapper instance.
-     *
-     * @param  Collection<string, Collection<int, array<string, mixed>>>  $policies
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $policies,
     ) {
         //
     }
@@ -121,9 +118,11 @@ class AuthDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->policies
-            ->filter(fn (Collection $policies, mixed $ability): bool => is_string($ability) && $ability !== '')
-            ->map(function (Collection $policies, string $ability) use ($argument): array {
+        return $this->policies()
+            ->filter(fn (array $group): bool => is_string($group['ability'] ?? null) && $group['ability'] !== '')
+            ->map(function (array $group) use ($argument): array {
+                $ability = $group['ability'];
+                $policies = $group['policies'];
                 $item = [
                     'label'    => $ability,
                     'kind'     => 12,
@@ -161,7 +160,7 @@ class AuthDocumentMapper extends DocumentMapper
             return [];
         }
 
-        $policies = $this->policies->get($value, collect());
+        $policies = $this->policyGroup($value);
 
         if ($policies->isEmpty()) {
             return [$this->notFound('Policy', $value, $range, 'auth')];
@@ -181,7 +180,7 @@ class AuthDocumentMapper extends DocumentMapper
      */
     protected function matchingPolicies(DetectedArgument $argument, string $value): Collection
     {
-        $policies = $this->policies->get($value, collect());
+        $policies = $this->policyGroup($value);
 
         if (!$this->requiresModel($argument)) {
             return $policies;
@@ -224,6 +223,33 @@ class AuthDocumentMapper extends DocumentMapper
         return is_array($next) && is_string($next['className'] ?? null)
             ? $next['className']
             : null;
+    }
+
+    /**
+     * Get policy groups by ability.
+     *
+     * @return Collection<int, array{ability: string, policies: Collection<int, array<string, mixed>>}>
+     */
+    protected function policies(): Collection
+    {
+        return collect($this->workspace->data->auth()->get()['policies'] ?? [])
+            ->map(fn (array $policies, string $ability): array => [
+                'ability'  => $ability,
+                'policies' => collect($policies),
+            ])
+            ->values();
+    }
+
+    /**
+     * Get the policy group for an ability.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function policyGroup(string $ability): Collection
+    {
+        $group = $this->policies()->firstWhere('ability', $ability);
+
+        return is_array($group) ? $group['policies'] : collect();
     }
 
     /**
@@ -270,5 +296,4 @@ class AuthDocumentMapper extends DocumentMapper
             'message'  => "{$descriptor} [{$value}] not found.",
         ];
     }
-
 }

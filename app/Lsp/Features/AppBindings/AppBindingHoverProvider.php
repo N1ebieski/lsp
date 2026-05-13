@@ -31,9 +31,6 @@ class AppBindingHoverProvider implements HoverProvider
             return null;
         }
 
-        return (new AppBindingDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->appBindings()->get(),
-        ))->hover($document, $position);
+        return (new AppBindingDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

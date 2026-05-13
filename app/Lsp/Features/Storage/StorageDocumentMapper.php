@@ -15,12 +15,9 @@ class StorageDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new storage document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $disks
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $disks,
     ) {
         //
     }
@@ -47,7 +44,7 @@ class StorageDocumentMapper extends DocumentMapper
     {
         $disk = $this->find($argument);
 
-        if ($disk === null || ! is_string($disk['file'] ?? null)) {
+        if ($disk === null || !is_string($disk['file'] ?? null)) {
             return [];
         }
 
@@ -80,7 +77,7 @@ class StorageDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->disks->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -100,15 +97,14 @@ class StorageDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->disks
-            ->keys()
-            ->filter(fn (mixed $disk): bool => is_string($disk) && $disk !== '' && ! str_contains($disk, '.'))
-            ->map(fn (string $disk): array => [
-                'label'    => $disk,
+        return $this->disks()
+            ->filter(fn (array $disk): bool => is_string($disk['disk'] ?? null) && $disk['disk'] !== '' && !str_contains($disk['disk'], '.'))
+            ->map(fn (array $disk): array => [
+                'label'    => $disk['disk'],
                 'kind'     => 12,
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $disk,
+                    'newText' => $disk['disk'],
                 ],
             ])
             ->values()
@@ -122,8 +118,31 @@ class StorageDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $disk = $this->disks->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $disk = $this->disks()->firstWhere('disk', $value);
 
         return is_array($disk) ? $disk : null;
+    }
+
+    /**
+     * Get the available storage disk configs.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function disks(): Collection
+    {
+        return $this->workspace->data->configs()
+            ->get()['configs']
+            ->filter(fn (array $config): bool => str_starts_with((string) ($config['name'] ?? ''), 'filesystems.disks.'))
+            ->map(fn (array $config): array => [
+                'disk' => str_replace('filesystems.disks.', '', (string) $config['name']),
+                ...$config,
+            ])
+            ->values();
     }
 }

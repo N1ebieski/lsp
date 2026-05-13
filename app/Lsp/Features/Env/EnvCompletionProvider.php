@@ -27,13 +27,10 @@ class EnvCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('envCompletion', true)) {
+        if (!$this->workspace->config->boolean('envCompletion', true)) {
             return [];
         }
 
-        return (new EnvDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->env()->get(),
-        ))->completions($document, $position);
+        return (new EnvDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

@@ -26,13 +26,10 @@ class RouteLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('routeLink', true)) {
+        if (!$this->workspace->config->boolean('routeLink', true)) {
             return [];
         }
 
-        return (new RouteDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->get()->keyBy('name'),
-        ))->links($document);
+        return (new RouteDocumentMapper($this->workspace))->links($document);
     }
 }

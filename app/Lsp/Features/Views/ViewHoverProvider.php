@@ -27,13 +27,10 @@ class ViewHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('viewHover', true)) {
+        if (!$this->workspace->config->boolean('viewHover', true)) {
             return null;
         }
 
-        return (new ViewDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->views()->views(),
-        ))->hover($document, $position);
+        return (new ViewDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

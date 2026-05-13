@@ -15,12 +15,9 @@ class InertiaDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new Inertia document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $views
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $views,
     ) {
         //
     }
@@ -63,7 +60,7 @@ class InertiaDocumentMapper extends DocumentMapper
     {
         $view = $this->find($argument);
 
-        if ($view === null || ! is_string($view['path'] ?? null)) {
+        if ($view === null || !is_string($view['path'] ?? null)) {
             return null;
         }
 
@@ -85,7 +82,7 @@ class InertiaDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->views->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -105,15 +102,14 @@ class InertiaDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->views
-            ->keys()
-            ->filter(fn (mixed $view): bool => is_string($view) && $view !== '')
-            ->map(fn (string $view): array => [
-                'label'    => $view,
+        return $this->views()
+            ->filter(fn (array $view): bool => is_string($view['name'] ?? null) && $view['name'] !== '')
+            ->map(fn (array $view): array => [
+                'label'    => $view['name'],
                 'kind'     => 21,
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $view,
+                    'newText' => $view['name'],
                 ],
             ])
             ->values()
@@ -127,8 +123,24 @@ class InertiaDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $view = $this->views->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $view = $this->views()->firstWhere('name', $value);
 
         return is_array($view) ? $view : null;
+    }
+
+    /**
+     * Get the available Inertia views.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function views(): Collection
+    {
+        return $this->workspace->data->inertiaViews()->get()['views']->values();
     }
 }

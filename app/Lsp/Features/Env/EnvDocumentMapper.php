@@ -15,12 +15,9 @@ class EnvDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new env document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $env
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $env,
     ) {
         //
     }
@@ -86,7 +83,7 @@ class EnvDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->env->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -106,15 +103,15 @@ class EnvDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->env
-            ->filter(fn (array $item, mixed $key): bool => is_string($key) && $key !== '')
-            ->map(fn (array $item, string $key): array => [
-                'label'    => $key,
+        return $this->env()
+            ->filter(fn (array $item): bool => is_string($item['key'] ?? null) && $item['key'] !== '')
+            ->map(fn (array $item): array => [
+                'label'    => $item['key'],
                 'kind'     => 21,
                 'detail'   => (string) ($item['value'] ?? ''),
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $key,
+                    'newText' => $item['key'],
                 ],
             ])
             ->values()
@@ -128,8 +125,27 @@ class EnvDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $item = $this->env->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $item = $this->env()->firstWhere('key', $value);
 
         return is_array($item) ? $item : null;
+    }
+
+    /**
+     * Get the available env variables.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function env(): Collection
+    {
+        return $this->workspace->data->env()
+            ->get()
+            ->map(fn (array $item, string $key): array => ['key' => $key, ...$item])
+            ->values();
     }
 }

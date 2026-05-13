@@ -46,6 +46,16 @@ class DocumentManager
     }
 
     /**
+     * Get all open documents.
+     *
+     * @return array<int, Document>
+     */
+    public function all(): array
+    {
+        return array_values($this->documents);
+    }
+
+    /**
      * Determine if a document is currently open.
      */
     public function has(string $uri): bool

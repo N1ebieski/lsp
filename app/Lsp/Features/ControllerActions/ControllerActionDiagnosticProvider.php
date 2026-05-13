@@ -30,9 +30,6 @@ class ControllerActionDiagnosticProvider implements DiagnosticProvider
             return [];
         }
 
-        return (new ControllerActionDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->controllerActions(),
-        ))->diagnostics($document);
+        return (new ControllerActionDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

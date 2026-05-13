@@ -27,13 +27,10 @@ class ConfigCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('configCompletion', true)) {
+        if (!$this->workspace->config->boolean('configCompletion', true)) {
             return [];
         }
 
-        return (new ConfigDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->configs(),
-        ))->completions($document, $position);
+        return (new ConfigDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

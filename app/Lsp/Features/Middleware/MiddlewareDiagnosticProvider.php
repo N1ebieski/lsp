@@ -26,13 +26,10 @@ class MiddlewareDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('middlewareDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('middlewareDiagnostics', true)) {
             return [];
         }
 
-        return (new MiddlewareDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->middleware()->get(),
-        ))->diagnostics($document);
+        return (new MiddlewareDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

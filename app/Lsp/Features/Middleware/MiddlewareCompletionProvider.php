@@ -27,13 +27,10 @@ class MiddlewareCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('middlewareCompletion', true)) {
+        if (!$this->workspace->config->boolean('middlewareCompletion', true)) {
             return [];
         }
 
-        return (new MiddlewareDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->middleware()->get(),
-        ))->completions($document, $position);
+        return (new MiddlewareDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

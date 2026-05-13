@@ -27,13 +27,10 @@ class EnvHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('envHover', true)) {
+        if (!$this->workspace->config->boolean('envHover', true)) {
             return null;
         }
 
-        return (new EnvDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->env()->get(),
-        ))->hover($document, $position);
+        return (new EnvDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

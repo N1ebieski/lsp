@@ -31,7 +31,7 @@ class ViewContentCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('viewCompletion', true)) {
+        if (!$this->workspace->config->boolean('viewCompletion', true)) {
             return [];
         }
 
@@ -39,7 +39,7 @@ class ViewContentCompletionProvider implements CompletionProvider
             ->matching($this->patterns())
             ->values()
             ->filter(fn (AutocompleteArgument $argument): bool => $this->isViewArgument($argument))
-            ->flatMap(fn (AutocompleteArgument $argument): array => $this->toCompletions($argument, $this->workspace->data->views()->views()))
+            ->flatMap(fn (AutocompleteArgument $argument): array => $this->toCompletions($argument, $this->views()))
             ->values()
             ->all();
     }
@@ -62,7 +62,7 @@ class ViewContentCompletionProvider implements CompletionProvider
     protected function isViewArgument(AutocompleteArgument $argument): bool
     {
         info('Checking argument', [
-            'index' => $argument->argumentIndex(),
+            'index'    => $argument->argumentIndex(),
             'children' => $argument->item()['arguments']['children'],
         ]);
 
@@ -74,7 +74,7 @@ class ViewContentCompletionProvider implements CompletionProvider
     /**
      * Convert the given argument to completion items.
      *
-     * @param  Collection<string, array<string, mixed>>  $views
+     * @param  Collection<int, array<string, mixed>>  $views
      * @return array<int, array<string, mixed>>
      */
     protected function toCompletions(AutocompleteArgument $argument, Collection $views): array
@@ -84,7 +84,7 @@ class ViewContentCompletionProvider implements CompletionProvider
             ->map(fn (array $view): array => [
                 'label'    => $view['key'],
                 'kind'     => 21,
-                'sortText' => ((bool) ($view['isVendor'] ?? false) ? '1' : '0').$view['key'],
+                'sortText' => ((bool) ($view['isVendor'] ?? false) ? '1' : '0') . $view['key'],
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
                     'newText' => $view['key'],
@@ -92,5 +92,15 @@ class ViewContentCompletionProvider implements CompletionProvider
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Get the available views.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function views(): Collection
+    {
+        return $this->workspace->data->views()->get();
     }
 }

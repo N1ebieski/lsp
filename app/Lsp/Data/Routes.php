@@ -27,16 +27,6 @@ class Routes extends DataProvider
     }
 
     /**
-     * Get routes keyed by controller action.
-     *
-     * @return Collection<string, array<string, mixed>>
-     */
-    public function controllerActions(): Collection
-    {
-        return $this->get()->keyBy('action');
-    }
-
-    /**
      * Get route-related watcher patterns.
      *
      * @return array<int, string>

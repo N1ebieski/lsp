@@ -31,9 +31,6 @@ class AuthCompletionProvider implements CompletionProvider
             return [];
         }
 
-        return (new AuthDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->auth()->policies(),
-        ))->completions($document, $position);
+        return (new AuthDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

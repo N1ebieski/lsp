@@ -26,7 +26,7 @@ class CompileBinaryCommand extends Command
         info("Compiling binary for version {$version}");
 
         $destination = base_path(
-            sprintf('bin/lsp-v%s-%s', $version, $this->option('arch'))
+            sprintf('bin/server-v%s-%s', $version, $this->option('arch'))
         );
 
         info("Destination: {$destination}");
@@ -76,11 +76,11 @@ class CompileBinaryCommand extends Command
         $spc = base_path('spc');
 
         collect([
-            base_path('lsp') . " app:build --build-version={$version}",
+            base_path('server') . " app:build --build-version={$version}",
             sprintf('%s download --with-php=8.2 --for-extensions="%s" --prefer-pre-built', $spc, $extensions),
             sprintf('%s doctor --auto-fix', $spc),
             sprintf('%s build --build-micro "%s"', $spc, $extensions),
-            sprintf('%s micro:combine %s -O %s', $spc, base_path('builds/lsp'), $destination),
+            sprintf('%s micro:combine %s -O %s', $spc, base_path('builds/server'), $destination),
         ])->each(function (string $command) use ($timeout) {
             Process::timeout($timeout)->run($command, function (string $type, string $output) {
                 echo $output;

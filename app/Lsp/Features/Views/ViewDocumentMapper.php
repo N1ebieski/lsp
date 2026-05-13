@@ -15,12 +15,9 @@ class ViewDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new view document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $views
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $views,
     ) {
         //
     }
@@ -68,7 +65,7 @@ class ViewDocumentMapper extends DocumentMapper
     {
         $view = $this->find($argument);
 
-        if ($view === null || ! is_string($view['path'] ?? null)) {
+        if ($view === null || !is_string($view['path'] ?? null)) {
             return null;
         }
 
@@ -90,7 +87,7 @@ class ViewDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->views->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -117,7 +114,7 @@ class ViewDocumentMapper extends DocumentMapper
             ->map(fn (array $view): array => [
                 'label'    => $view['key'],
                 'kind'     => 21,
-                'sortText' => ((bool) ($view['isVendor'] ?? false) ? '1' : '0').$view['key'],
+                'sortText' => ((bool) ($view['isVendor'] ?? false) ? '1' : '0') . $view['key'],
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
                     'newText' => $view['key'],
@@ -134,7 +131,13 @@ class ViewDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $view = $this->views->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $view = $this->views()->firstWhere('key', $value);
 
         return is_array($view) ? $view : null;
     }
@@ -142,21 +145,32 @@ class ViewDocumentMapper extends DocumentMapper
     /**
      * Get the views available for the given autocomplete argument.
      *
-     * @return Collection<string, array<string, mixed>>
+     * @return Collection<int, array<string, mixed>>
      */
     protected function viewsFor(AutocompleteArgument $argument): Collection
     {
+        $views = $this->views();
         $item = $argument->item();
         $class = $item['className'];
 
         if ($class === 'Route' || $class === 'Illuminate\\Support\\Facades\\Route') {
             if ($item['methodName'] !== 'livewire') {
-                return $this->views;
+                return $views;
             }
 
-            return $this->views->filter(fn (array $view): bool => ($view['livewire'] ?? null) !== null);
+            return $views->filter(fn (array $view): bool => ($view['livewire'] ?? null) !== null);
         }
 
-        return $this->views;
+        return $views;
+    }
+
+    /**
+     * Get the available views.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function views(): Collection
+    {
+        return $this->workspace->data->views()->get();
     }
 }

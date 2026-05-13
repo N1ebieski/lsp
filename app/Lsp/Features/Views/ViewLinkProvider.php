@@ -26,13 +26,10 @@ class ViewLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('viewLink', true)) {
+        if (!$this->workspace->config->boolean('viewLink', true)) {
             return [];
         }
 
-        return (new ViewDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->views()->views(),
-        ))->links($document);
+        return (new ViewDocumentMapper($this->workspace))->links($document);
     }
 }

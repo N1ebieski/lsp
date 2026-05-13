@@ -26,12 +26,10 @@ class PathLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('pathsLink', true)) {
+        if (!$this->workspace->config->boolean('pathsLink', true)) {
             return [];
         }
 
-        return (new PathDocumentMapper(
-            $this->workspace->data->paths()->get(),
-        ))->links($document);
+        return (new PathDocumentMapper($this->workspace))->links($document);
     }
 }

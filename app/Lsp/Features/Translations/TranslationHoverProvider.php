@@ -27,13 +27,10 @@ class TranslationHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('translationHover', true)) {
+        if (!$this->workspace->config->boolean('translationHover', true)) {
             return null;
         }
 
-        return (new TranslationDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->translations(),
-        ))->hover($document, $position);
+        return (new TranslationDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

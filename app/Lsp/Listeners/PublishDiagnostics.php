@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Lsp\Listeners;
 
 use App\Lsp\Contracts\Listener;
+use App\Lsp\Document;
 use App\Lsp\Transport\JsonRpcRequest;
 use App\Lsp\Workspace;
 
@@ -23,6 +24,14 @@ class PublishDiagnostics implements Listener
             return;
         }
 
+        $this->publish($document, $workspace);
+    }
+
+    /**
+     * Publish diagnostics for the given document.
+     */
+    public function publish(Document $document, Workspace $workspace): void
+    {
         $diagnostics = [];
 
         foreach ($workspace->features->diagnostics() as $provider) {

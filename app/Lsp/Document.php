@@ -65,6 +65,40 @@ class Document
     }
 
     /**
+     * Get document text inside the given LSP range.
+     *
+     * @param  array<string, mixed>  $range
+     */
+    public function textInRange(array $range): string
+    {
+        $start = $range['start'] ?? null;
+        $end = $range['end'] ?? null;
+
+        if (!is_array($start) || !is_array($end)) {
+            return '';
+        }
+
+        $line = $start['line'] ?? null;
+        $endLine = $end['line'] ?? null;
+        $character = $start['character'] ?? null;
+        $endCharacter = $end['character'] ?? null;
+
+        if (!is_int($line) || !is_int($endLine) || !is_int($character) || !is_int($endCharacter)) {
+            return '';
+        }
+
+        if ($line !== $endLine) {
+            return '';
+        }
+
+        return substr(
+            explode("\n", $this->content)[$line] ?? '',
+            $character,
+            $endCharacter - $character,
+        );
+    }
+
+    /**
      * Get document content up to the given position.
      *
      * @param  array<string, mixed>  $position
@@ -74,7 +108,7 @@ class Document
         $line = $position['line'] ?? null;
         $character = $position['character'] ?? null;
 
-        if (! is_int($line) || ! is_int($character)) {
+        if (!is_int($line) || !is_int($character)) {
             return $this->content;
         }
 

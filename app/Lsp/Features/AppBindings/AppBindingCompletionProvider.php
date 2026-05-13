@@ -31,9 +31,6 @@ class AppBindingCompletionProvider implements CompletionProvider
             return [];
         }
 
-        return (new AppBindingDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->appBindings()->get(),
-        ))->completions($document, $position);
+        return (new AppBindingDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

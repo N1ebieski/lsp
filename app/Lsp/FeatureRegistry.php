@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Lsp;
 
+use App\Lsp\Contracts\CodeActionProvider;
 use App\Lsp\Contracts\CompletionProvider;
 use App\Lsp\Contracts\DiagnosticProvider;
+use App\Lsp\Contracts\FileWatcher;
 use App\Lsp\Contracts\HoverProvider;
 use App\Lsp\Contracts\LinkProvider;
 use App\Lsp\Features\AppBindings\AppBindingCompletionProvider;
@@ -19,8 +21,10 @@ use App\Lsp\Features\Auth\AuthCompletionProvider;
 use App\Lsp\Features\Auth\AuthDiagnosticProvider;
 use App\Lsp\Features\Auth\AuthHoverProvider;
 use App\Lsp\Features\Auth\AuthLinkProvider;
+use App\Lsp\Features\BladeComponents\BladeComponentCompletionProvider;
 use App\Lsp\Features\BladeComponents\BladeComponentHoverProvider;
 use App\Lsp\Features\BladeComponents\BladeComponentLinkProvider;
+use App\Lsp\Features\BladeDirectives\BladeDirectiveCompletionProvider;
 use App\Lsp\Features\Configs\ConfigCompletionProvider;
 use App\Lsp\Features\Configs\ConfigDiagnosticProvider;
 use App\Lsp\Features\Configs\ConfigHoverProvider;
@@ -28,15 +32,19 @@ use App\Lsp\Features\Configs\ConfigLinkProvider;
 use App\Lsp\Features\ControllerActions\ControllerActionCompletionProvider;
 use App\Lsp\Features\ControllerActions\ControllerActionDiagnosticProvider;
 use App\Lsp\Features\ControllerActions\ControllerActionLinkProvider;
+use App\Lsp\Features\Eloquent\EloquentCompletionProvider;
+use App\Lsp\Features\Env\EnvCodeActionProvider;
 use App\Lsp\Features\Env\EnvCompletionProvider;
 use App\Lsp\Features\Env\EnvDiagnosticProvider;
 use App\Lsp\Features\Env\EnvHoverProvider;
 use App\Lsp\Features\Env\EnvLinkProvider;
+use App\Lsp\Features\Inertia\InertiaCodeActionProvider;
 use App\Lsp\Features\Inertia\InertiaCompletionProvider;
 use App\Lsp\Features\Inertia\InertiaDiagnosticProvider;
 use App\Lsp\Features\Inertia\InertiaHoverProvider;
 use App\Lsp\Features\Inertia\InertiaLinkProvider;
 use App\Lsp\Features\Inertia\InertiaPropertyCompletionProvider;
+use App\Lsp\Features\LivewireComponents\LivewireComponentCompletionProvider;
 use App\Lsp\Features\LivewireComponents\LivewireComponentHoverProvider;
 use App\Lsp\Features\LivewireComponents\LivewireComponentLinkProvider;
 use App\Lsp\Features\Middleware\MiddlewareCompletionProvider;
@@ -59,14 +67,18 @@ use App\Lsp\Features\Storage\StorageLinkProvider;
 use App\Lsp\Features\Translations\TranslationCompletionProvider;
 use App\Lsp\Features\Translations\TranslationDiagnosticProvider;
 use App\Lsp\Features\Translations\TranslationHoverProvider;
-use App\Lsp\Features\Translations\TranslationLocaleCompletionProvider;
 use App\Lsp\Features\Translations\TranslationLinkProvider;
+use App\Lsp\Features\Translations\TranslationLocaleCompletionProvider;
 use App\Lsp\Features\Translations\TranslationParameterCompletionProvider;
+use App\Lsp\Features\Validation\ValidationCompletionProvider;
+use App\Lsp\Features\Views\ViewCodeActionProvider;
 use App\Lsp\Features\Views\ViewCompletionProvider;
 use App\Lsp\Features\Views\ViewContentCompletionProvider;
 use App\Lsp\Features\Views\ViewDiagnosticProvider;
 use App\Lsp\Features\Views\ViewHoverProvider;
 use App\Lsp\Features\Views\ViewLinkProvider;
+use App\Lsp\Watchers\DataProviderWatcher;
+use App\Lsp\Watchers\PestHelperWatcher;
 
 class FeatureRegistry
 {
@@ -79,6 +91,19 @@ class FeatureRegistry
     }
 
     /**
+     * Get file watchers.
+     *
+     * @return array<int, FileWatcher>
+     */
+    public function watchers(): array
+    {
+        return [
+            new DataProviderWatcher($this->workspace),
+            new PestHelperWatcher($this->workspace),
+        ];
+    }
+
+    /**
      * Get completion providers.
      *
      * @return array<int, CompletionProvider>
@@ -86,8 +111,13 @@ class FeatureRegistry
     public function completions(): array
     {
         return [
+            new BladeComponentCompletionProvider($this->workspace),
+            new BladeDirectiveCompletionProvider($this->workspace),
+            new LivewireComponentCompletionProvider($this->workspace),
+            new EloquentCompletionProvider($this->workspace),
             new RouteParameterCompletionProvider($this->workspace),
             new RouteCompletionProvider($this->workspace),
+            new ValidationCompletionProvider,
             new ControllerActionCompletionProvider($this->workspace),
             new InertiaPropertyCompletionProvider($this->workspace),
             new InertiaCompletionProvider($this->workspace),
@@ -178,6 +208,20 @@ class FeatureRegistry
             new StorageDiagnosticProvider($this->workspace),
             new TranslationDiagnosticProvider($this->workspace),
             new ViewDiagnosticProvider($this->workspace),
+        ];
+    }
+
+    /**
+     * Get code action providers.
+     *
+     * @return array<int, CodeActionProvider>
+     */
+    public function codeActions(): array
+    {
+        return [
+            new EnvCodeActionProvider($this->workspace),
+            new InertiaCodeActionProvider($this->workspace),
+            new ViewCodeActionProvider($this->workspace),
         ];
     }
 }

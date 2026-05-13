@@ -27,13 +27,10 @@ class ConfigHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('configHover', true)) {
+        if (!$this->workspace->config->boolean('configHover', true)) {
             return null;
         }
 
-        return (new ConfigDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->configs(),
-        ))->hover($document, $position);
+        return (new ConfigDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

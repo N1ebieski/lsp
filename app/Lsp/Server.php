@@ -9,10 +9,13 @@ use App\Lsp\Contracts\Method;
 use App\Lsp\Contracts\Transport;
 use App\Lsp\Listeners\ClearDocumentDiagnostics;
 use App\Lsp\Listeners\CloseDocument;
-use App\Lsp\Listeners\InvalidateWorkspaceData;
+use App\Lsp\Listeners\NotifyFileWatchers;
 use App\Lsp\Listeners\OpenDocument;
 use App\Lsp\Listeners\PublishDiagnostics;
+use App\Lsp\Listeners\PublishOpenDocumentDiagnostics;
 use App\Lsp\Listeners\UpdateDocument;
+use App\Lsp\Methods\LaravelData;
+use App\Lsp\Methods\TextDocumentCodeAction;
 use App\Lsp\Methods\TextDocumentCompletion;
 use App\Lsp\Methods\TextDocumentDefinition;
 use App\Lsp\Methods\TextDocumentDocumentLink;
@@ -29,6 +32,8 @@ class Server
      * @var array<string, class-string<Method>>
      */
     protected array $requests = [
+        'laravel/data'              => LaravelData::class,
+        'textDocument/codeAction'   => TextDocumentCodeAction::class,
         'textDocument/completion'   => TextDocumentCompletion::class,
         'textDocument/definition'   => TextDocumentDefinition::class,
         'textDocument/documentLink' => TextDocumentDocumentLink::class,
@@ -44,7 +49,7 @@ class Server
         'textDocument/didOpen'            => [OpenDocument::class, PublishDiagnostics::class],
         'textDocument/didChange'          => [UpdateDocument::class, PublishDiagnostics::class],
         'textDocument/didClose'           => [CloseDocument::class, ClearDocumentDiagnostics::class],
-        'workspace/didChangeWatchedFiles' => [InvalidateWorkspaceData::class],
+        'workspace/didChangeWatchedFiles' => [NotifyFileWatchers::class, PublishOpenDocumentDiagnostics::class],
     ];
 
     /**
@@ -87,16 +92,10 @@ class Server
             $jsonRequest = json_decode($rawMessage, true);
 
             if (!is_array($jsonRequest) || json_last_error() !== JSON_ERROR_NONE) {
-                info('LSP incoming parse error.');
-
-                $this->send(
-                    JsonRpcResponse::error(null, -32700, 'Parse error: Invalid JSON.')->toJson()
-                );
+                $this->send(JsonRpcResponse::error(null, -32700, 'Parse error: Invalid JSON.'));
 
                 return;
             }
-
-            $this->logIncoming($jsonRequest);
 
             if ($this->isResponse($jsonRequest)) {
                 return;
@@ -142,15 +141,11 @@ class Server
 
             $this->handleUnknownRequest($request);
         } catch (Throwable $e) {
-            report($e);
-
-            $this->send(
-                JsonRpcResponse::error(
-                    $jsonRequest['id'] ?? null,
-                    -32603,
-                    $e->getMessage(),
-                )->toJson()
-            );
+            $this->send(JsonRpcResponse::error(
+                isset($jsonRequest) && is_array($jsonRequest) ? ($jsonRequest['id'] ?? null) : null,
+                -32603,
+                $e->getMessage(),
+            ));
         }
     }
 
@@ -169,9 +164,7 @@ class Server
      */
     protected function handleInitialize(JsonRpcRequest $request): void
     {
-        if ($workspace = Workspace::fromInitializeRequest($request, $this)) {
-            $this->setWorkspace($workspace);
-        }
+        $this->workspace = Workspace::fromInitializeRequest($request, $this);
 
         $this->send(JsonRpcResponse::result($request->id(), [
             'capabilities' => [
@@ -183,7 +176,10 @@ class Server
                     'resolveProvider' => false,
                 ],
                 'completionProvider' => [
-                    'triggerCharacters' => ['"', "'"],
+                    'triggerCharacters' => ['"', "'", '|', 'x', '-', ':', '@'],
+                ],
+                'codeActionProvider' => [
+                    'codeActionKinds' => ['quickfix'],
                 ],
                 'definitionProvider' => true,
                 'hoverProvider'      => true,
@@ -192,7 +188,7 @@ class Server
                 'name'    => 'Laravel LSP',
                 'version' => '0.1.0',
             ],
-        ])->toJson());
+        ]));
     }
 
     /**
@@ -206,17 +202,25 @@ class Server
             return;
         }
 
-        $this->sendRequest('client/registerCapability', [
-            'registrations' => [
-                [
-                    'id'              => 'file-watching',
-                    'method'          => 'workspace/didChangeWatchedFiles',
-                    'registerOptions' => [
-                        'watchers' => $watchers,
+        $this->send([
+            'id'     => $this->nextRequestId(),
+            'method' => 'client/registerCapability',
+            'params' => [
+                'registrations' => [
+                    [
+                        'id'              => 'file-watching',
+                        'method'          => 'workspace/didChangeWatchedFiles',
+                        'registerOptions' => [
+                            'watchers' => $watchers,
+                        ],
                     ],
                 ],
             ],
         ]);
+
+        foreach ($this->workspace?->features->watchers() ?? [] as $watcher) {
+            $watcher->initialize();
+        }
     }
 
     /**
@@ -226,7 +230,7 @@ class Server
     {
         $this->shutdown = true;
 
-        $this->send(JsonRpcResponse::result($request->id(), [])->toJson());
+        $this->send(JsonRpcResponse::result($request->id(), []));
     }
 
     /**
@@ -245,7 +249,7 @@ class Server
         $response = $handler->handle($request, $this->workspace);
 
         if (!$request->isNotification()) {
-            $this->send($response->toJson());
+            $this->send($response);
         }
     }
 
@@ -279,7 +283,7 @@ class Server
                 $request->id(),
                 -32601,
                 "The method [{$request->method()}] was not found.",
-            )->toJson()
+            )
         );
     }
 
@@ -292,56 +296,11 @@ class Server
             return;
         }
 
-        $this->send(
-            JsonRpcResponse::error(
-                $request->id(),
-                -32002,
-                'Server not initialized.',
-            )->toJson()
-        );
-    }
-
-    /**
-     * Determine if a workspace has been initialized.
-     */
-    public function hasWorkspace(): bool
-    {
-        return $this->workspace !== null;
-    }
-
-    /**
-     * Get the active workspace instance.
-     */
-    public function workspace(): ?Workspace
-    {
-        return $this->workspace;
-    }
-
-    /**
-     * Set the active workspace instance.
-     */
-    public function setWorkspace(Workspace $workspace): void
-    {
-        $this->workspace = $workspace;
-    }
-
-    /**
-     * Send a JSON-RPC request to the client.
-     *
-     * @param  array<string, mixed>  $params
-     */
-    public function sendRequest(string $method, array $params = []): void
-    {
-        $message = json_encode([
-            'jsonrpc' => '2.0',
-            'id'      => $this->nextRequestId(),
-            'method'  => $method,
-            'params'  => $params,
-        ], JSON_UNESCAPED_UNICODE);
-
-        if ($message !== false) {
-            $this->send($message);
-        }
+        $this->send(JsonRpcResponse::error(
+            $request->id(),
+            -32002,
+            'Server not initialized.',
+        ));
     }
 
     /**
@@ -351,63 +310,23 @@ class Server
      */
     public function sendNotification(string $method, array $params = []): void
     {
-        $this->send(
-            JsonRpcResponse::notification($method, $params)->toJson()
-        );
+        $this->send(JsonRpcResponse::notification($method, $params));
     }
 
     /**
      * Send a JSON-RPC message to the client.
-     */
-    protected function send(string $message): void
-    {
-        $this->logOutgoing($message);
-
-        $this->transport->send($message);
-    }
-
-    /**
-     * Log incoming JSON-RPC message metadata.
      *
-     * @param  array<string, mixed>  $message
+     * @param  JsonRpcResponse|array<string, mixed>  $message
      */
-    protected function logIncoming(array $message): void
+    protected function send(JsonRpcResponse|array $message): void
     {
-        return;
+        $payload = $message instanceof JsonRpcResponse
+            ? $message->toJson()
+            : json_encode(['jsonrpc' => '2.0', ...$message], JSON_UNESCAPED_UNICODE);
 
-        info('LSP incoming message.', [
-            'id'           => $message['id'] ?? null,
-            'method'       => $message['method'] ?? null,
-            'notification' => !array_key_exists('id', $message),
-            'response'     => isset($message['id']) && !isset($message['method']),
-            'error'        => isset($message['error']),
-        ]);
-    }
-
-    /**
-     * Log outgoing JSON-RPC message metadata.
-     */
-    protected function logOutgoing(string $message): void
-    {
-        return;
-
-        $jsonMessage = json_decode($message, true);
-
-        if (!is_array($jsonMessage)) {
-            info('LSP outgoing message.', [
-                'invalid' => true,
-            ]);
-
-            return;
+        if ($payload !== false) {
+            $this->transport->send($payload);
         }
-
-        info('LSP outgoing message.', [
-            'id'           => $jsonMessage['id'] ?? null,
-            'method'       => $jsonMessage['method'] ?? null,
-            'notification' => isset($jsonMessage['method']) && !array_key_exists('id', $jsonMessage),
-            'response'     => isset($jsonMessage['id']) && !isset($jsonMessage['method']),
-            'error'        => isset($jsonMessage['error']),
-        ]);
     }
 
     /**

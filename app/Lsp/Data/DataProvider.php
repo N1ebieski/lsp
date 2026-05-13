@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Lsp\Data;
 
 use App\Lsp\PhpRunner;
-use Symfony\Component\Finder\Glob;
 
 abstract class DataProvider
 {
@@ -23,10 +22,8 @@ abstract class DataProvider
      * Create a new data provider instance.
      */
     public function __construct(
-        protected ?PhpRunner $php = null,
-    ) {
-        //
-    }
+        protected PhpRunner $php,
+    ) {}
 
     /**
      * Get the template to run via tinker.
@@ -46,32 +43,6 @@ abstract class DataProvider
      * @return array<int, string>
      */
     abstract public function patterns(): array;
-
-    /**
-     * Determine if the provider watches the given relative path.
-     */
-    public function matches(string $relativePath): bool
-    {
-        $path = '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
-
-        foreach ($this->patterns() as $pattern) {
-            $pattern = '/' . ltrim(str_replace('\\', '/', $pattern), '/');
-
-            if (preg_match(Glob::toRegex($pattern), $path) === 1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Set the PHP runner used to execute templates.
-     */
-    public function setPhp(PhpRunner $php): void
-    {
-        $this->php = $php;
-    }
 
     /**
      * Get the parsed data for this provider.
@@ -107,10 +78,6 @@ abstract class DataProvider
      */
     protected function load(): void
     {
-        if ($this->php === null) {
-            return;
-        }
-
         $template = $this->template();
 
         if ($template === '') {

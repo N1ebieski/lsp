@@ -57,32 +57,22 @@ class MixManifest extends DataProvider
         $this->loaded = true;
         $path = $this->workspace->path('public/mix-manifest.json');
 
-        if (! is_file($path)) {
+        if (!is_file($path)) {
             return $this->data = collect();
         }
 
         $items = json_decode((string) file_get_contents($path), true);
 
-        if (! is_array($items)) {
+        if (!is_array($items)) {
             return $this->data = collect();
         }
 
         return $this->data = collect($items)
             ->map(fn (mixed $value, string $key): array => [
-                'key' => ltrim(str_replace('\\', '/', $key), '/'),
+                'key'   => ltrim(str_replace('\\', '/', $key), '/'),
                 'value' => ltrim(str_replace('\\', '/', (string) $value), '/'),
-                'path' => 'public/'.ltrim(str_replace('\\', '/', (string) $value), '/'),
+                'path'  => 'public/' . ltrim(str_replace('\\', '/', (string) $value), '/'),
             ])
             ->values();
-    }
-
-    /**
-     * Get manifest items keyed by key.
-     *
-     * @return Collection<string, array<string, mixed>>
-     */
-    public function manifest(): Collection
-    {
-        return $this->get()->keyBy('key');
     }
 }

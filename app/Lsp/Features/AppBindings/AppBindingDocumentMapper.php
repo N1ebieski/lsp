@@ -15,12 +15,9 @@ class AppBindingDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new app binding document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $appBindings
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $appBindings,
     ) {
         //
     }
@@ -73,7 +70,7 @@ class AppBindingDocumentMapper extends DocumentMapper
     {
         $appBinding = $this->find($argument);
 
-        if ($appBinding === null || ! is_string($appBinding['path'] ?? null)) {
+        if ($appBinding === null || !is_string($appBinding['path'] ?? null)) {
             return [];
         }
 
@@ -96,7 +93,7 @@ class AppBindingDocumentMapper extends DocumentMapper
     {
         $appBinding = $this->find($argument);
 
-        if ($appBinding === null || ! is_string($appBinding['path'] ?? null)) {
+        if ($appBinding === null || !is_string($appBinding['path'] ?? null)) {
             return null;
         }
 
@@ -125,7 +122,7 @@ class AppBindingDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->appBindings->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -145,15 +142,14 @@ class AppBindingDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->appBindings
-            ->keys()
-            ->filter(fn (mixed $binding): bool => is_string($binding) && $binding !== '')
-            ->map(fn (string $binding): array => [
-                'label'    => $binding,
+        return $this->appBindings()
+            ->filter(fn (array $binding): bool => is_string($binding['key'] ?? null) && $binding['key'] !== '')
+            ->map(fn (array $binding): array => [
+                'label'    => $binding['key'],
                 'kind'     => 21,
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $binding,
+                    'newText' => $binding['key'],
                 ],
             ])
             ->values()
@@ -173,8 +169,21 @@ class AppBindingDocumentMapper extends DocumentMapper
             return null;
         }
 
-        $appBinding = $this->appBindings->get($value);
+        $appBinding = $this->appBindings()->firstWhere('key', $value);
 
         return is_array($appBinding) ? $appBinding : null;
+    }
+
+    /**
+     * Get the available app bindings.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function appBindings(): Collection
+    {
+        return $this->workspace->data->appBindings()
+            ->get()
+            ->map(fn (array $binding, string $key): array => ['key' => $key, ...$binding])
+            ->values();
     }
 }

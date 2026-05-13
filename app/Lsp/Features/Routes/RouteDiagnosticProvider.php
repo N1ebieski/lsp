@@ -26,13 +26,10 @@ class RouteDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('routeDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('routeDiagnostics', true)) {
             return [];
         }
 
-        return (new RouteDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->get()->keyBy('name'),
-        ))->diagnostics($document);
+        return (new RouteDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

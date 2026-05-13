@@ -27,13 +27,10 @@ class InertiaHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('inertiaHover', true)) {
+        if (!$this->workspace->config->boolean('inertiaHover', true)) {
             return null;
         }
 
-        return (new InertiaDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->inertiaViews()->get(),
-        ))->hover($document, $position);
+        return (new InertiaDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

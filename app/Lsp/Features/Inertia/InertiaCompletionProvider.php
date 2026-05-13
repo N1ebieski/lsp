@@ -27,13 +27,10 @@ class InertiaCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('inertiaCompletion', true)) {
+        if (!$this->workspace->config->boolean('inertiaCompletion', true)) {
             return [];
         }
 
-        return (new InertiaDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->inertiaViews()->get(),
-        ))->completions($document, $position);
+        return (new InertiaDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

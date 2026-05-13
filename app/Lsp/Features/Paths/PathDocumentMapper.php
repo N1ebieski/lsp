@@ -9,17 +9,16 @@ use App\Lsp\Detection\DetectedArgument;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Features\Support\DocumentMapper;
 use App\Lsp\Support\Uri;
+use App\Lsp\Workspace;
 use Illuminate\Support\Collection;
 
 class PathDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new path document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $paths
      */
     public function __construct(
-        protected Collection $paths,
+        protected Workspace $workspace,
     ) {
         //
     }
@@ -44,14 +43,16 @@ class PathDocumentMapper extends DocumentMapper
     protected function toLinks(DetectedArgument $argument): array
     {
         $method = $argument->item()['methodName'] ?? null;
-        $base = is_string($method) ? $this->paths->get($method) : null;
+        $base = is_string($method)
+            ? $this->paths()->firstWhere('key', $method)
+            : null;
         $value = $argument->stringValue();
 
-        if (! is_array($base) || ! is_string($base['path'] ?? null) || $value === null) {
+        if (!is_array($base) || !is_string($base['path'] ?? null) || $value === null) {
             return [];
         }
 
-        $path = rtrim($base['path'], DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.ltrim($value, DIRECTORY_SEPARATOR);
+        $path = rtrim($base['path'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($value, DIRECTORY_SEPARATOR);
 
         return is_file($path)
             ? [[
@@ -90,5 +91,15 @@ class PathDocumentMapper extends DocumentMapper
     protected function toCompletions(AutocompleteArgument $argument): array
     {
         return [];
+    }
+
+    /**
+     * Get the available base paths.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function paths(): Collection
+    {
+        return $this->workspace->data->paths()->get();
     }
 }

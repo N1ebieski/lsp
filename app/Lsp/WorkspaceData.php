@@ -10,16 +10,19 @@ use App\Lsp\Data\Auth;
 use App\Lsp\Data\BladeComponents;
 use App\Lsp\Data\Configs;
 use App\Lsp\Data\Controllers;
+use App\Lsp\Data\CustomBladeDirectives;
 use App\Lsp\Data\DataProvider;
+use App\Lsp\Data\DebugInfo;
 use App\Lsp\Data\Env;
 use App\Lsp\Data\InertiaViews;
 use App\Lsp\Data\Middleware;
 use App\Lsp\Data\MixManifest;
+use App\Lsp\Data\Models;
 use App\Lsp\Data\Paths;
 use App\Lsp\Data\Routes;
+use App\Lsp\Data\Tests;
 use App\Lsp\Data\Translations;
 use App\Lsp\Data\Views;
-use App\Lsp\Support\Uri;
 
 class WorkspaceData
 {
@@ -42,12 +45,16 @@ class WorkspaceData
             'bladeComponents' => new BladeComponents($workspace->php),
             'configs'     => new Configs($workspace->php),
             'controllers' => new Controllers($workspace),
+            'customBladeDirectives' => new CustomBladeDirectives($workspace->php),
+            'debugInfo'   => new DebugInfo($workspace->php),
             'env'         => new Env($workspace),
             'inertiaViews' => new InertiaViews($workspace),
             'middleware'  => new Middleware($workspace->php),
             'mixManifest' => new MixManifest($workspace),
+            'models'      => new Models($workspace->php),
             'paths'       => new Paths($workspace->php),
             'routes'      => new Routes($workspace->php),
+            'tests'       => new Tests($workspace->php),
             'translations' => new Translations($workspace->php),
             'views'       => new Views($workspace->php),
         ];
@@ -94,6 +101,22 @@ class WorkspaceData
     }
 
     /**
+     * Get the custom Blade directives provider.
+     */
+    public function customBladeDirectives(): CustomBladeDirectives
+    {
+        return $this->providers['customBladeDirectives'];
+    }
+
+    /**
+     * Get the debug info provider.
+     */
+    public function debugInfo(): DebugInfo
+    {
+        return $this->providers['debugInfo'];
+    }
+
+    /**
      * Get the env provider.
      */
     public function env(): Env
@@ -126,6 +149,14 @@ class WorkspaceData
     }
 
     /**
+     * Get the models provider.
+     */
+    public function models(): Models
+    {
+        return $this->providers['models'];
+    }
+
+    /**
      * Get the paths provider.
      */
     public function paths(): Paths
@@ -150,6 +181,14 @@ class WorkspaceData
     }
 
     /**
+     * Get the tests provider.
+     */
+    public function tests(): Tests
+    {
+        return $this->providers['tests'];
+    }
+
+    /**
      * Get the translations provider.
      */
     public function translations(): Translations
@@ -166,39 +205,11 @@ class WorkspaceData
     }
 
     /**
-     * Invalidate providers after watched files change.
-     *
-     * @param  array<int, array<string, mixed>>  $changes
+     * Get a data provider by name.
      */
-    public function invalidate(array $changes): void
+    public function get(string $name): ?DataProvider
     {
-        if ($changes === []) {
-            return;
-        }
-
-        $paths = collect($changes)
-            ->pluck('uri')
-            ->filter(fn (mixed $uri): bool => is_string($uri))
-            ->map($this->relativePathFromUri(...))
-            ->unique()
-            ->values()
-            ->all();
-
-        if ($paths === []) {
-            return;
-        }
-
-        foreach ($this->providers as $provider) {
-            foreach ($paths as $path) {
-                if (! $provider->matches($path)) {
-                    continue;
-                }
-
-                $provider->invalidate();
-
-                break;
-            }
-        }
+        return $this->providers[$name] ?? null;
     }
 
     /**
@@ -209,25 +220,5 @@ class WorkspaceData
     public function all(): array
     {
         return $this->providers;
-    }
-
-    /**
-     * Get a workspace-relative path from a file URI.
-     */
-    protected function relativePathFromUri(string $uri): ?string
-    {
-        if (parse_url($uri, PHP_URL_SCHEME) !== 'file') {
-            return null;
-        }
-
-        $path = Uri::of($uri)->path();
-
-        if ($path === '') {
-            return null;
-        }
-
-        $relativePath = Uri::of($this->workspace->baseUri)->relativePath($path);
-
-        return $relativePath === $path ? null : $relativePath;
     }
 }

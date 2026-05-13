@@ -27,12 +27,10 @@ class AssetCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('assetCompletion', true)) {
+        if (!$this->workspace->config->boolean('assetCompletion', true)) {
             return [];
         }
 
-        return (new AssetDocumentMapper(
-            $this->workspace->data->assets()->get()->keyBy('path'),
-        ))->completions($document, $position);
+        return (new AssetDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

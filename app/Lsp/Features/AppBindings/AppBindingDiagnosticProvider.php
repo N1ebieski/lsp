@@ -30,9 +30,6 @@ class AppBindingDiagnosticProvider implements DiagnosticProvider
             return [];
         }
 
-        return (new AppBindingDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->appBindings()->get(),
-        ))->diagnostics($document);
+        return (new AppBindingDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

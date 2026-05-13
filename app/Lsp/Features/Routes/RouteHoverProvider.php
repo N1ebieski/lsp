@@ -27,13 +27,10 @@ class RouteHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('routeHover', true)) {
+        if (!$this->workspace->config->boolean('routeHover', true)) {
             return null;
         }
 
-        return (new RouteDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->get()->keyBy('name'),
-        ))->hover($document, $position);
+        return (new RouteDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

@@ -27,13 +27,10 @@ class RouteCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('routeCompletion', true)) {
+        if (!$this->workspace->config->boolean('routeCompletion', true)) {
             return [];
         }
 
-        return (new RouteDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->get()->keyBy('name'),
-        ))->completions($document, $position);
+        return (new RouteDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

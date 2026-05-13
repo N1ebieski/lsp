@@ -26,13 +26,10 @@ class TranslationLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('translationLink', true)) {
+        if (!$this->workspace->config->boolean('translationLink', true)) {
             return [];
         }
 
-        return (new TranslationDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->translations(),
-        ))->links($document);
+        return (new TranslationDocumentMapper($this->workspace))->links($document);
     }
 }

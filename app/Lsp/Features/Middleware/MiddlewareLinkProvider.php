@@ -26,13 +26,10 @@ class MiddlewareLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('middlewareLink', true)) {
+        if (!$this->workspace->config->boolean('middlewareLink', true)) {
             return [];
         }
 
-        return (new MiddlewareDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->middleware()->get(),
-        ))->links($document);
+        return (new MiddlewareDocumentMapper($this->workspace))->links($document);
     }
 }

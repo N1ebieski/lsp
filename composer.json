@@ -54,7 +54,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "bin": [
-        "lsp"
+        "server"
     ],
     "scripts": {
         "pre-autoload-dump": [

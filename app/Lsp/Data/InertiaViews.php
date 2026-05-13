@@ -23,36 +23,27 @@ class InertiaViews extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/inertia.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/inertia.php') ?: '';
     }
 
     /**
      * Parse the raw inertia config data.
      *
      * @param  array<string, mixed>  $data
+     * @return array{views: Collection<string, array<string, string>>, page_paths: Collection<int, string>, page_extensions: Collection<int, string>}
      */
-    public function parse(array $data): Collection
+    public function parse(array $data): array
     {
-        $paths = collect($data['page_paths'] ?? [])
-            ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
-            ->values();
+        $paths = $this->normalizePagePaths($data);
+        $extensions = $this->normalizePageExtensions($data);
 
-        if ($paths->isEmpty()) {
-            $paths = collect(['resources/js/Pages']);
-        }
-
-        $extensions = collect($data['page_extensions'] ?? [])
-            ->filter(fn (mixed $extension): bool => is_string($extension) && $extension !== '')
-            ->map(fn (string $extension): string => ltrim($extension, '.'))
-            ->values();
-
-        if ($extensions->isEmpty()) {
-            $extensions = collect(['vue']);
-        }
-
-        return $paths
-            ->flatMap(fn (string $path): Collection => $this->views($path, $extensions))
-            ->keyBy('name');
+        return [
+            'views' => $paths
+                ->flatMap(fn (string $path): Collection => $this->discoverViews($path, $extensions))
+                ->keyBy('name'),
+            'page_paths'      => $paths,
+            'page_extensions' => $extensions,
+        ];
     }
 
     /**
@@ -71,10 +62,47 @@ class InertiaViews extends DataProvider
 
     /**
      * Get the default inertia view data.
+     *
+     * @return array{views: Collection<string, array<string, string>>, page_paths: Collection<int, string>, page_extensions: Collection<int, string>}
      */
-    protected function default(): Collection
+    protected function default(): array
     {
-        return collect();
+        return [
+            'views'           => collect(),
+            'page_paths'      => collect(['resources/js/Pages']),
+            'page_extensions' => collect(['vue']),
+        ];
+    }
+
+    /**
+     * Normalize Inertia page paths.
+     *
+     * @param  array<string, mixed>  $data
+     * @return Collection<int, string>
+     */
+    protected function normalizePagePaths(array $data): Collection
+    {
+        $paths = collect($data['page_paths'] ?? [])
+            ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+            ->values();
+
+        return $paths->isEmpty() ? collect(['resources/js/Pages']) : $paths;
+    }
+
+    /**
+     * Normalize Inertia page extensions.
+     *
+     * @param  array<string, mixed>  $data
+     * @return Collection<int, string>
+     */
+    protected function normalizePageExtensions(array $data): Collection
+    {
+        $extensions = collect($data['page_extensions'] ?? [])
+            ->filter(fn (mixed $extension): bool => is_string($extension) && $extension !== '')
+            ->map(fn (string $extension): string => ltrim($extension, '.'))
+            ->values();
+
+        return $extensions->isEmpty() ? collect(['vue']) : $extensions;
     }
 
     /**
@@ -83,11 +111,11 @@ class InertiaViews extends DataProvider
      * @param  Collection<int, string>  $extensions
      * @return Collection<int, array<string, string>>
      */
-    protected function views(string $path, Collection $extensions): Collection
+    protected function discoverViews(string $path, Collection $extensions): Collection
     {
         $absolute = $this->workspace->path($path);
 
-        if (! is_dir($absolute)) {
+        if (!is_dir($absolute)) {
             return collect();
         }
 
@@ -99,7 +127,7 @@ class InertiaViews extends DataProvider
 
                 return [
                     'name' => str_replace('\\', '/', $name),
-                    'path' => trim($path, '/').'/'.str_replace('\\', '/', $relative),
+                    'path' => trim($path, '/') . '/' . str_replace('\\', '/', $relative),
                 ];
             })
             ->values();

@@ -7,6 +7,7 @@ namespace App\Lsp\Features\BladeComponents;
 use App\Lsp\Document;
 use App\Lsp\Support\Position;
 use App\Lsp\Workspace;
+use Illuminate\Support\Collection;
 
 class BladeComponentDocumentMapper
 {
@@ -82,6 +83,44 @@ class BladeComponentDocumentMapper
     }
 
     /**
+     * Get Blade component completions.
+     *
+     * @param  array<string, mixed>  $position
+     * @return array<int, array<string, mixed>>
+     */
+    public function completions(Document $document, array $position): array
+    {
+        $prefix = $this->completionPrefix($document, $position);
+
+        if ($prefix === null) {
+            return [];
+        }
+
+        $components = $this->workspace->data->bladeComponents()->get()['components'] ?? [];
+
+        return collect(array_keys(is_array($components) ? $components : []))
+            ->filter(fn (mixed $key): bool => is_string($key) && $key !== '')
+            ->map(fn (string $key): array => [
+                'label'    => $this->completionLabel($key),
+                'textEdit' => [
+                    'range'   => [
+                        'start' => [
+                            'line'      => $position['line'],
+                            'character' => $position['character'] - strlen($prefix),
+                        ],
+                        'end' => [
+                            'line'      => $position['line'],
+                            'character' => $position['character'],
+                        ],
+                    ],
+                    'newText' => $this->completionLabel($key),
+                ],
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * Find Blade component tag matches.
      *
      * @return array<int, array{name: string, range: array<string, array<string, int>>}>
@@ -126,6 +165,55 @@ class BladeComponentDocumentMapper
         $components = $this->workspace->data->bladeComponents()->get()['components'] ?? [];
 
         return is_array($components[$name] ?? null) ? $components[$name] : null;
+    }
+
+    /**
+     * Get the component prefix being completed.
+     *
+     * @param  array<string, mixed>  $position
+     */
+    protected function completionPrefix(Document $document, array $position): ?string
+    {
+        $lineNumber = $position['line'] ?? null;
+        $character = $position['character'] ?? null;
+
+        if (! is_int($lineNumber) || ! is_int($character)) {
+            return null;
+        }
+
+        $line = explode("\n", $document->content)[$lineNumber] ?? '';
+        $linePrefix = substr($line, 0, $character);
+
+        return $this->componentPrefixes()
+            ->first(fn (string $prefix): bool => str_ends_with($linePrefix, $prefix));
+    }
+
+    /**
+     * Get Blade component completion prefixes.
+     *
+     * @return Collection<int, string>
+     */
+    protected function componentPrefixes(): Collection
+    {
+        $prefixes = $this->workspace->data->bladeComponents()->get()['prefixes'] ?? [];
+
+        return collect(['x', 'x-'])
+            ->merge($prefixes)
+            ->filter(fn (mixed $prefix): bool => is_string($prefix) && $prefix !== '')
+            ->sortByDesc(fn (string $prefix): int => strlen($prefix))
+            ->values();
+    }
+
+    /**
+     * Get the completion label for the component key.
+     */
+    protected function completionLabel(string $key): string
+    {
+        if (str_contains($key, '::') || ! str_contains($key, ':')) {
+            return "x-{$key}";
+        }
+
+        return $key;
     }
 
     /**

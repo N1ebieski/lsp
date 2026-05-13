@@ -15,12 +15,9 @@ class ConfigDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new config document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $configs
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $configs,
     ) {
         //
     }
@@ -49,7 +46,7 @@ class ConfigDocumentMapper extends DocumentMapper
     {
         $config = $this->find($argument);
 
-        if ($config === null || ! is_string($config['file'] ?? null)) {
+        if ($config === null || !is_string($config['file'] ?? null)) {
             return [];
         }
 
@@ -82,7 +79,7 @@ class ConfigDocumentMapper extends DocumentMapper
         if ($value !== null) {
             $display = is_scalar($value) ? (string) $value : 'array(...)';
 
-            $lines[] = '`'.($display === '' ? '[empty string]' : $display).'`';
+            $lines[] = '`' . ($display === '' ? '[empty string]' : $display) . '`';
         }
 
         if (is_string($config['file'] ?? null)) {
@@ -114,7 +111,7 @@ class ConfigDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->configs->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -134,11 +131,11 @@ class ConfigDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        if (($argument->item()['methodName'] ?? null) === 'getMany' && ! $argument->isArray()) {
+        if (($argument->item()['methodName'] ?? null) === 'getMany' && !$argument->isArray()) {
             return [];
         }
 
-        return $this->configs
+        return $this->configs()
             ->filter(fn (array $config): bool => is_string($config['name'] ?? null) && $config['name'] !== '')
             ->map(function (array $config) use ($argument): array {
                 $name = $config['name'];
@@ -184,8 +181,18 @@ class ConfigDocumentMapper extends DocumentMapper
             return null;
         }
 
-        $config = $this->configs->get($value);
+        $config = $this->configs()->firstWhere('name', $value);
 
         return is_array($config) ? $config : null;
+    }
+
+    /**
+     * Get the available config entries.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function configs(): Collection
+    {
+        return $this->workspace->data->configs()->get()['configs'];
     }
 }

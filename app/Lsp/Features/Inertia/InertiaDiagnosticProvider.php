@@ -26,13 +26,10 @@ class InertiaDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('inertiaDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('inertiaDiagnostics', true)) {
             return [];
         }
 
-        return (new InertiaDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->inertiaViews()->get(),
-        ))->diagnostics($document);
+        return (new InertiaDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

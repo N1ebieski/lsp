@@ -26,13 +26,10 @@ class MixLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('mixLink', true)) {
+        if (!$this->workspace->config->boolean('mixLink', true)) {
             return [];
         }
 
-        return (new MixDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->mixManifest()->manifest(),
-        ))->links($document);
+        return (new MixDocumentMapper($this->workspace))->links($document);
     }
 }

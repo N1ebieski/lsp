@@ -26,13 +26,10 @@ class ConfigLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('configLink', true)) {
+        if (!$this->workspace->config->boolean('configLink', true)) {
             return [];
         }
 
-        return (new ConfigDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->configs(),
-        ))->links($document);
+        return (new ConfigDocumentMapper($this->workspace))->links($document);
     }
 }

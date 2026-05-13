@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Lsp\Data;
 
-use Illuminate\Support\Collection;
-
 class Translations extends DataProvider
 {
     /**
@@ -13,7 +11,7 @@ class Translations extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/translations.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/translations.php') ?: '';
     }
 
     /**
@@ -30,31 +28,31 @@ class Translations extends DataProvider
         $translations = [];
 
         foreach (($data['translations'] ?? []) as $key => $locales) {
-            if (! is_array($locales)) {
+            if (!is_array($locales)) {
                 continue;
             }
 
             foreach ($locales as $locale => $definition) {
-                if (! is_array($definition)) {
+                if (!is_array($definition)) {
                     continue;
                 }
 
                 [$value, $path, $line, $param] = array_pad($definition, 4, null);
 
                 $translations[$key][$locale] = [
-                    'value' => is_int($value) && isset($values[$value]) ? $values[$value] : '',
-                    'path' => is_int($path) && isset($paths[$path]) ? $paths[$path] : '',
-                    'line' => is_int($line) ? $line : null,
+                    'value'  => is_int($value) && isset($values[$value]) ? $values[$value] : '',
+                    'path'   => is_int($path) && isset($paths[$path]) ? $paths[$path] : '',
+                    'line'   => is_int($line) ? $line : null,
                     'params' => is_int($param) && isset($params[$param]) ? $params[$param] : [],
                 ];
             }
         }
 
         return [
-            'default' => $data['default'] ?? '',
+            'default'      => $data['default'] ?? '',
             'translations' => $translations,
-            'languages' => $data['languages'] ?? [],
-            'paths' => $paths,
+            'languages'    => $data['languages'] ?? [],
+            'paths'        => $paths,
         ];
     }
 
@@ -72,65 +70,6 @@ class Translations extends DataProvider
     }
 
     /**
-     * Get the default translation locale.
-     */
-    public function defaultLocale(): string
-    {
-        return (string) ($this->get()['default'] ?? '');
-    }
-
-    /**
-     * Get translations keyed by name.
-     *
-     * @return Collection<string, array<string, array<string, mixed>>>
-     */
-    public function translations(): Collection
-    {
-        return collect($this->get()['translations'] ?? [])
-            ->filter(fn (mixed $translation): bool => is_array($translation));
-    }
-
-    /**
-     * Get available translation languages.
-     *
-     * @return Collection<int, string>
-     */
-    public function languages(): Collection
-    {
-        return collect($this->get()['languages'] ?? [])
-            ->filter(fn (mixed $language): bool => is_string($language) && $language !== '')
-            ->values();
-    }
-
-    /**
-     * Find a translation by exact key or matching prefix.
-     *
-     * @return array<string, array<string, mixed>>|null
-     */
-    public function find(?string $key): ?array
-    {
-        if ($key === null) {
-            return null;
-        }
-
-        $key = str_replace('\\', '', $key);
-        $translations = $this->translations();
-        $translation = $translations->get($key);
-
-        if (is_array($translation)) {
-            return $translation;
-        }
-
-        foreach ($translations as $translationKey => $translation) {
-            if (str_starts_with((string) $translationKey, "{$key}.") && is_array($translation)) {
-                return $translation;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Get default translation data.
      *
      * @return array<string, mixed>
@@ -138,10 +77,10 @@ class Translations extends DataProvider
     protected function default(): array
     {
         return [
-            'default' => '',
+            'default'      => '',
             'translations' => [],
-            'languages' => [],
-            'paths' => [],
+            'languages'    => [],
+            'paths'        => [],
         ];
     }
 }

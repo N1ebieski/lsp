@@ -31,10 +31,6 @@ class ControllerActionCompletionProvider implements CompletionProvider
             return [];
         }
 
-        return (new ControllerActionDocumentMapper(
-            $this->workspace,
-            collect(),
-            $this->workspace->data->controllers()->get(),
-        ))->completions($document, $position);
+        return (new ControllerActionDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

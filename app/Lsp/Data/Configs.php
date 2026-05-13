@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Lsp\Data;
 
-use Illuminate\Support\Collection;
-
 class Configs extends DataProvider
 {
     /**
@@ -13,7 +11,7 @@ class Configs extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/configs.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/configs.php') ?: '';
     }
 
     /**
@@ -26,10 +24,10 @@ class Configs extends DataProvider
     {
         return [
             'configs' => collect($data)->map(fn (array $item): array => [
-                'name' => $item['name'] ?? '',
+                'name'  => $item['name'] ?? '',
                 'value' => $item['value'] ?? null,
-                'file' => $item['file'] ?? null,
-                'line' => $item['line'] ?? null,
+                'file'  => $item['file'] ?? null,
+                'line'  => $item['line'] ?? null,
             ])->values(),
             'paths' => collect($data)
                 ->pluck('file')
@@ -53,28 +51,6 @@ class Configs extends DataProvider
     }
 
     /**
-     * Get configs keyed by name.
-     *
-     * @return Collection<string, array<string, mixed>>
-     */
-    public function configs(): Collection
-    {
-        return $this->get()['configs']->keyBy('name');
-    }
-
-    /**
-     * Get storage disk configs keyed by disk name.
-     *
-     * @return Collection<string, array<string, mixed>>
-     */
-    public function storageDisks(): Collection
-    {
-        return $this->configs()
-            ->filter(fn (array $config): bool => str_starts_with((string) ($config['name'] ?? ''), 'filesystems.disks.'))
-            ->mapWithKeys(fn (array $config): array => [str_replace('filesystems.disks.', '', (string) $config['name']) => $config]);
-    }
-
-    /**
      * Get default config data.
      *
      * @return array<string, mixed>
@@ -83,7 +59,7 @@ class Configs extends DataProvider
     {
         return [
             'configs' => collect(),
-            'paths' => collect(),
+            'paths'   => collect(),
         ];
     }
 }

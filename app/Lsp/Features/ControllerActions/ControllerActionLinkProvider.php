@@ -30,9 +30,6 @@ class ControllerActionLinkProvider implements LinkProvider
             return [];
         }
 
-        return (new ControllerActionDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->routes()->controllerActions(),
-        ))->links($document);
+        return (new ControllerActionDocumentMapper($this->workspace))->links($document);
     }
 }

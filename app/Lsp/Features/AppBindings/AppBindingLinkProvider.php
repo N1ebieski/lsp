@@ -30,9 +30,6 @@ class AppBindingLinkProvider implements LinkProvider
             return [];
         }
 
-        return (new AppBindingDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->appBindings()->get(),
-        ))->links($document);
+        return (new AppBindingDocumentMapper($this->workspace))->links($document);
     }
 }

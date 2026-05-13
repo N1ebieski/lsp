@@ -26,13 +26,10 @@ class EnvDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('envDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('envDiagnostics', true)) {
             return [];
         }
 
-        return (new EnvDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->env()->get(),
-        ))->diagnostics($document);
+        return (new EnvDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

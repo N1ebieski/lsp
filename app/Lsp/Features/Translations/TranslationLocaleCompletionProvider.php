@@ -10,6 +10,7 @@ use App\Lsp\Detection\AutocompleteArguments;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Document;
 use App\Lsp\Workspace;
+use Illuminate\Support\Collection;
 
 class TranslationLocaleCompletionProvider implements CompletionProvider
 {
@@ -30,7 +31,7 @@ class TranslationLocaleCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('translationCompletion', true)) {
+        if (!$this->workspace->config->boolean('translationCompletion', true)) {
             return [];
         }
 
@@ -70,9 +71,9 @@ class TranslationLocaleCompletionProvider implements CompletionProvider
         $class = $argument->item()['className'] ?? '';
         $indexes = [
             Pattern::contract('Translation\\Translator') => ['get' => 2, 'choice' => 3],
-            'Lang' => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
-            Pattern::support('Facades\\Lang') => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
-            '' => ['__' => 2, 'trans' => 2, '@lang' => 2, 'trans_choice' => 3],
+            'Lang'                                       => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
+            Pattern::support('Facades\\Lang')            => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
+            ''                                           => ['__' => 2, 'trans' => 2, '@lang' => 2, 'trans_choice' => 3],
         ];
 
         return is_string($method)
@@ -86,8 +87,7 @@ class TranslationLocaleCompletionProvider implements CompletionProvider
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->workspace->data->translations()
-            ->languages()
+        return $this->languages()
             ->map(fn (string $language): array => [
                 'label'    => $language,
                 'kind'     => 12,
@@ -98,5 +98,17 @@ class TranslationLocaleCompletionProvider implements CompletionProvider
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Get available translation languages.
+     *
+     * @return Collection<int, string>
+     */
+    protected function languages(): Collection
+    {
+        return collect($this->workspace->data->translations()->get()['languages'] ?? [])
+            ->filter(fn (mixed $language): bool => is_string($language) && $language !== '')
+            ->values();
     }
 }

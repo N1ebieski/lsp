@@ -26,13 +26,10 @@ class ConfigDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('configDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('configDiagnostics', true)) {
             return [];
         }
 
-        return (new ConfigDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->configs(),
-        ))->diagnostics($document);
+        return (new ConfigDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

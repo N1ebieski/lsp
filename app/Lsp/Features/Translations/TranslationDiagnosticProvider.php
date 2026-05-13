@@ -26,13 +26,10 @@ class TranslationDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('translationDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('translationDiagnostics', true)) {
             return [];
         }
 
-        return (new TranslationDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->translations(),
-        ))->diagnostics($document);
+        return (new TranslationDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

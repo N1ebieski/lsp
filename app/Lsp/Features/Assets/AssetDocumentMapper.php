@@ -9,17 +9,16 @@ use App\Lsp\Detection\DetectedArgument;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Features\Support\DocumentMapper;
 use App\Lsp\Support\Uri;
+use App\Lsp\Workspace;
 use Illuminate\Support\Collection;
 
 class AssetDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new asset document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $assets
      */
     public function __construct(
-        protected Collection $assets,
+        protected Workspace $workspace,
     ) {
         //
     }
@@ -46,7 +45,7 @@ class AssetDocumentMapper extends DocumentMapper
     {
         $asset = $this->find($argument);
 
-        if ($asset === null || ! is_string($asset['fullPath'] ?? null)) {
+        if ($asset === null || !is_string($asset['fullPath'] ?? null)) {
             return [];
         }
 
@@ -76,7 +75,7 @@ class AssetDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->assets->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -96,15 +95,14 @@ class AssetDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->assets
-            ->keys()
-            ->filter(fn (mixed $asset): bool => is_string($asset) && $asset !== '')
-            ->map(fn (string $asset): array => [
-                'label'    => $asset,
+        return $this->assets()
+            ->filter(fn (array $asset): bool => is_string($asset['path'] ?? null) && $asset['path'] !== '')
+            ->map(fn (array $asset): array => [
+                'label'    => $asset['path'],
                 'kind'     => 21,
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $asset,
+                    'newText' => $asset['path'],
                 ],
             ])
             ->values()
@@ -124,8 +122,18 @@ class AssetDocumentMapper extends DocumentMapper
             return null;
         }
 
-        $asset = $this->assets->get($value);
+        $asset = $this->assets()->firstWhere('path', $value);
 
         return is_array($asset) ? $asset : null;
+    }
+
+    /**
+     * Get the available public assets.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function assets(): Collection
+    {
+        return $this->workspace->data->assets()->get();
     }
 }

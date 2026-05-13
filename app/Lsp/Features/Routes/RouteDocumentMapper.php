@@ -15,12 +15,9 @@ class RouteDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new route document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $routes
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $routes,
     ) {}
 
     /**
@@ -88,7 +85,7 @@ class RouteDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        return $value !== null && ! str_contains($value, '*');
+        return $value !== null && !str_contains($value, '*');
     }
 
     /**
@@ -107,24 +104,24 @@ class RouteDocumentMapper extends DocumentMapper
         if ($this->isVoltArgument($argument)) {
             $view = $this->voltView($value);
 
-            if ($view === null || ! is_string($view['path'] ?? null)) {
+            if ($view === null || !is_string($view['path'] ?? null)) {
                 return [];
             }
 
             return [[
-                'range' => $argument->range(),
+                'range'  => $argument->range(),
                 'target' => (string) $this->workspace->uri()->joinPath($view['path']),
             ]];
         }
 
         $route = $this->find($argument);
 
-        if ($route === null || ! is_string($route['filename'] ?? null)) {
+        if ($route === null || !is_string($route['filename'] ?? null)) {
             return [];
         }
 
         return [[
-            'range' => $argument->range(),
+            'range'  => $argument->range(),
             'target' => $this->workspace->uri()->joinPath($route['filename']) . '#L' . max(1, (int) ($route['line'] ?? 1)),
         ]];
     }
@@ -139,7 +136,7 @@ class RouteDocumentMapper extends DocumentMapper
     {
         $route = $this->find($argument);
 
-        if ($route === null || ! is_string($route['filename'] ?? null)) {
+        if ($route === null || !is_string($route['filename'] ?? null)) {
             return null;
         }
 
@@ -150,9 +147,9 @@ class RouteDocumentMapper extends DocumentMapper
         $target = (string) $this->workspace->uri()->joinPath($filename);
 
         return [
-            'range' => $argument->range(),
+            'range'    => $argument->range(),
             'contents' => [
-                'kind' => 'markdown',
+                'kind'  => 'markdown',
                 'value' => implode("\n\n", [
                     $action,
                     "[{$filename}]({$target})",
@@ -187,11 +184,11 @@ class RouteDocumentMapper extends DocumentMapper
         }
 
         return [[
-            'range' => $argument->range(),
+            'range'    => $argument->range(),
             'severity' => 2,
-            'source' => 'Laravel Extension',
-            'code' => 'route',
-            'message' => "{$descriptor} [{$value}] not found.",
+            'source'   => 'Laravel Extension',
+            'code'     => 'route',
+            'message'  => "{$descriptor} [{$value}] not found.",
         ]];
     }
 
@@ -202,14 +199,14 @@ class RouteDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->routes
+        return $this->routes()
             ->filter(fn (array $route): bool => is_string($route['name'] ?? null) && $route['name'] !== '')
             ->map(fn (array $route): array => [
-                'label' => $route['name'],
-                'kind' => 13,
-                'detail' => $this->completionDetail($route),
+                'label'    => $route['name'],
+                'kind'     => 13,
+                'detail'   => $this->completionDetail($route),
                 'textEdit' => [
-                    'range' => $argument->replacementRange(),
+                    'range'   => $argument->replacementRange(),
                     'newText' => $route['name'],
                 ],
             ])
@@ -224,9 +221,25 @@ class RouteDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $route = $this->routes->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $route = $this->routes()->firstWhere('name', $value);
 
         return is_array($route) ? $route : null;
+    }
+
+    /**
+     * Get the available routes.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function routes(): Collection
+    {
+        return $this->workspace->data->routes()->get();
     }
 
     /**
@@ -238,7 +251,7 @@ class RouteDocumentMapper extends DocumentMapper
     {
         return implode("\n\n", [
             (string) ($route['action'] ?? ''),
-            '['.(string) ($route['method'] ?? '').'] '.(string) ($route['uri'] ?? ''),
+            '[' . (string) ($route['method'] ?? '') . '] ' . (string) ($route['uri'] ?? ''),
         ]);
     }
 
@@ -260,7 +273,7 @@ class RouteDocumentMapper extends DocumentMapper
     {
         $view = $this->workspace->data->views()
             ->get()
-            ->first(fn (array $view): bool => ($view['key'] ?? null) === "livewire.{$component}");
+            ->firstWhere('key', "livewire.{$component}");
 
         return is_array($view) ? $view : null;
     }

@@ -26,13 +26,10 @@ class StorageLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('storageLink', true)) {
+        if (!$this->workspace->config->boolean('storageLink', true)) {
             return [];
         }
 
-        return (new StorageDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->storageDisks(),
-        ))->links($document);
+        return (new StorageDocumentMapper($this->workspace))->links($document);
     }
 }

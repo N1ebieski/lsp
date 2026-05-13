@@ -106,24 +106,28 @@ class Workspace
     }
 
     /**
-     * Get file watchers for all providers.
+     * Get client file watcher registrations.
      *
      * @return array<int, array<string, mixed>>
      */
     public function fileWatchers(): array
     {
-        $watchers = [];
+        $patterns = [];
 
-        foreach ($this->data->all() as $provider) {
-            foreach ($provider->patterns() as $pattern) {
-                $watchers[] = [
-                    'globPattern' => $pattern,
-                    'kind'        => 7,
-                ];
-            }
+        foreach ($this->features->watchers() as $watcher) {
+            array_push($patterns, ...$watcher->patterns());
         }
 
-        return $watchers;
+        return collect(array_values(array_unique($patterns)))
+            ->map(fn (string $pattern): array => [
+                'globPattern' => [
+                    'baseUri' => $this->baseUri,
+                    'pattern' => $pattern,
+                ],
+                'kind'        => 7,
+            ])
+            ->values()
+            ->all();
     }
 
     /**

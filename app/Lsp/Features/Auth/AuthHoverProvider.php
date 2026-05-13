@@ -31,9 +31,6 @@ class AuthHoverProvider implements HoverProvider
             return null;
         }
 
-        return (new AuthDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->auth()->policies(),
-        ))->hover($document, $position);
+        return (new AuthDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

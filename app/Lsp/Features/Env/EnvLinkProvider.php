@@ -26,13 +26,10 @@ class EnvLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('envLink', true)) {
+        if (!$this->workspace->config->boolean('envLink', true)) {
             return [];
         }
 
-        return (new EnvDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->env()->get(),
-        ))->links($document);
+        return (new EnvDocumentMapper($this->workspace))->links($document);
     }
 }

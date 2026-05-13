@@ -26,13 +26,10 @@ class MixDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('mixDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('mixDiagnostics', true)) {
             return [];
         }
 
-        return (new MixDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->mixManifest()->manifest(),
-        ))->diagnostics($document);
+        return (new MixDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

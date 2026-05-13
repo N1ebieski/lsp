@@ -14,9 +14,7 @@ class PhpRunner
     public function __construct(
         protected string $projectPath,
         protected array $command = ['php', 'artisan', 'tinker'],
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the current Laravel project path.

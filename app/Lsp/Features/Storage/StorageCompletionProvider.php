@@ -27,13 +27,10 @@ class StorageCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('storageCompletion', true)) {
+        if (!$this->workspace->config->boolean('storageCompletion', true)) {
             return [];
         }
 
-        return (new StorageDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->storageDisks(),
-        ))->completions($document, $position);
+        return (new StorageDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

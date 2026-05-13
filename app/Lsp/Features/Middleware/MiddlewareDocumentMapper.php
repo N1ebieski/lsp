@@ -18,12 +18,9 @@ class MiddlewareDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new middleware document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $middleware
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $middleware,
     ) {
         //
     }
@@ -64,7 +61,7 @@ class MiddlewareDocumentMapper extends DocumentMapper
     {
         return collect($argument->stringValues())
             ->map(function (array $value): ?array {
-                $item = $this->middleware->get($this->name($value['value']));
+                $item = $this->find($this->name($value['value']));
 
                 return is_array($item) && is_string($item['path'] ?? null)
                     ? $this->workspace->link($value['range'], $item['path'], is_numeric($item['line'] ?? null) ? (int) $item['line'] : null)
@@ -84,13 +81,13 @@ class MiddlewareDocumentMapper extends DocumentMapper
     protected function toHover(DetectedArgument $argument, array $position): ?array
     {
         foreach ($argument->stringValues() as $value) {
-            if (! Position::inRange($value['range'], $position)) {
+            if (!Position::inRange($value['range'], $position)) {
                 continue;
             }
 
-            $item = $this->middleware->get($this->name($value['value']));
+            $item = $this->find($this->name($value['value']));
 
-            if (! is_array($item)) {
+            if (!is_array($item)) {
                 continue;
             }
 
@@ -124,7 +121,7 @@ class MiddlewareDocumentMapper extends DocumentMapper
     protected function toDiagnostics(DetectedArgument $argument): array
     {
         return collect($argument->stringValues())
-            ->reject(fn (array $value): bool => $this->middleware->has($this->name($value['value'])))
+            ->reject(fn (array $value): bool => $this->find($this->name($value['value'])) !== null)
             ->map(fn (array $value): array => [
                 'range'    => $value['range'],
                 'severity' => 2,
@@ -143,15 +140,15 @@ class MiddlewareDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->middleware
-            ->filter(fn (array $item, mixed $key): bool => is_string($key) && $key !== '')
-            ->map(fn (array $item, string $key): array => [
-                'label'    => $key,
+        return $this->middleware()
+            ->filter(fn (array $item): bool => is_string($item['key'] ?? null) && $item['key'] !== '')
+            ->map(fn (array $item): array => [
+                'label'    => $item['key'],
                 'kind'     => 13,
                 'detail'   => (string) ($item['parameters'] ?? ''),
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $key,
+                    'newText' => $item['key'],
                 ],
             ])
             ->values()
@@ -164,6 +161,31 @@ class MiddlewareDocumentMapper extends DocumentMapper
     protected function name(string $value): string
     {
         return explode(':', $value)[0];
+    }
+
+    /**
+     * Find the middleware entry for the given name.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function find(string $name): ?array
+    {
+        $middleware = $this->middleware()->firstWhere('key', $name);
+
+        return is_array($middleware) ? $middleware : null;
+    }
+
+    /**
+     * Get the available middleware.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function middleware(): Collection
+    {
+        return $this->workspace->data->middleware()
+            ->get()
+            ->map(fn (array $middleware, string $key): array => ['key' => $key, ...$middleware])
+            ->values();
     }
 
     /**

@@ -26,12 +26,10 @@ class AssetLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('assetLink', true)) {
+        if (!$this->workspace->config->boolean('assetLink', true)) {
             return [];
         }
 
-        return (new AssetDocumentMapper(
-            $this->workspace->data->assets()->get()->keyBy('path'),
-        ))->links($document);
+        return (new AssetDocumentMapper($this->workspace))->links($document);
     }
 }

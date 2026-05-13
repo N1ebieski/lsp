@@ -27,13 +27,10 @@ class ViewCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('viewCompletion', true)) {
+        if (!$this->workspace->config->boolean('viewCompletion', true)) {
             return [];
         }
 
-        return (new ViewDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->views()->views(),
-        ))->completions($document, $position);
+        return (new ViewDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

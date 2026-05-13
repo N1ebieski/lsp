@@ -31,11 +31,11 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('inertiaCompletion', true)) {
+        if (!$this->workspace->config->boolean('inertiaCompletion', true)) {
             return [];
         }
 
-        $views = $this->workspace->data->inertiaViews()->get();
+        $views = $this->views();
 
         return AutocompleteArguments::in($document, $position)
             ->matching($this->patterns())
@@ -62,7 +62,7 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
     /**
      * Convert the given argument to completion items.
      *
-     * @param  Collection<string, array<string, mixed>>  $views
+     * @param  Collection<int, array<string, mixed>>  $views
      * @return array<int, array<string, mixed>>
      */
     protected function toCompletions(AutocompleteArgument $argument, Collection $views): array
@@ -73,9 +73,9 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
             return [];
         }
 
-        $view = $views->get($viewName);
+        $view = $views->firstWhere('name', $viewName);
 
-        if (! is_array($view) || ! is_string($view['path'] ?? null)) {
+        if (!is_array($view) || !is_string($view['path'] ?? null)) {
             return [];
         }
 
@@ -108,13 +108,23 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
     {
         $absolute = $this->workspace->path($path);
 
-        if (! is_file($absolute)) {
+        if (!is_file($absolute)) {
             return null;
         }
 
         $content = file_get_contents($absolute);
 
         return is_string($content) ? $content : null;
+    }
+
+    /**
+     * Get the available Inertia views.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function views(): Collection
+    {
+        return $this->workspace->data->inertiaViews()->get()['views']->values();
     }
 
     /**
@@ -158,7 +168,7 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
                     $nestedLevel--;
                 }
 
-                if ($nestedLevel > 0 || ! str_contains($prop, ':')) {
+                if ($nestedLevel > 0 || !str_contains($prop, ':')) {
                     continue;
                 }
 

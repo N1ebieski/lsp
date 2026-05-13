@@ -26,13 +26,10 @@ class InertiaLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('inertiaLink', true)) {
+        if (!$this->workspace->config->boolean('inertiaLink', true)) {
             return [];
         }
 
-        return (new InertiaDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->inertiaViews()->get(),
-        ))->links($document);
+        return (new InertiaDocumentMapper($this->workspace))->links($document);
     }
 }

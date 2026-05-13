@@ -15,12 +15,9 @@ class MixDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new mix document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $manifest
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $manifest,
     ) {
         //
     }
@@ -61,7 +58,7 @@ class MixDocumentMapper extends DocumentMapper
     {
         $item = $this->find($argument);
 
-        if ($item === null || ! is_string($item['path'] ?? null)) {
+        if ($item === null || !is_string($item['path'] ?? null)) {
             return null;
         }
 
@@ -83,7 +80,7 @@ class MixDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || $this->manifest->has($value)) {
+        if ($value === null || $this->find($argument) !== null) {
             return [];
         }
 
@@ -103,14 +100,14 @@ class MixDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        return $this->manifest
-            ->filter(fn (array $item, mixed $key): bool => is_string($key) && $key !== '')
-            ->map(fn (array $item, string $key): array => [
-                'label'    => $key,
+        return $this->manifest()
+            ->filter(fn (array $item): bool => is_string($item['key'] ?? null) && $item['key'] !== '')
+            ->map(fn (array $item): array => [
+                'label'    => $item['key'],
                 'kind'     => 12,
                 'textEdit' => [
                     'range'   => $argument->replacementRange(),
-                    'newText' => $key,
+                    'newText' => $item['key'],
                 ],
             ])
             ->values()
@@ -124,8 +121,24 @@ class MixDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $item = $this->manifest->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $item = $this->manifest()->firstWhere('key', $value);
 
         return is_array($item) ? $item : null;
+    }
+
+    /**
+     * Get the available mix manifest items.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function manifest(): Collection
+    {
+        return $this->workspace->data->mixManifest()->get();
     }
 }

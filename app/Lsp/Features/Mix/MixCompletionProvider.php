@@ -27,13 +27,10 @@ class MixCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('mixCompletion', true)) {
+        if (!$this->workspace->config->boolean('mixCompletion', true)) {
             return [];
         }
 
-        return (new MixDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->mixManifest()->manifest(),
-        ))->completions($document, $position);
+        return (new MixDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

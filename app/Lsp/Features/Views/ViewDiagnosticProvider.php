@@ -26,13 +26,10 @@ class ViewDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('viewDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('viewDiagnostics', true)) {
             return [];
         }
 
-        return (new ViewDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->views()->views(),
-        ))->diagnostics($document);
+        return (new ViewDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

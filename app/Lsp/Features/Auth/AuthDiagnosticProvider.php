@@ -30,9 +30,6 @@ class AuthDiagnosticProvider implements DiagnosticProvider
             return [];
         }
 
-        return (new AuthDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->auth()->policies(),
-        ))->diagnostics($document);
+        return (new AuthDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

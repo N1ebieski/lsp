@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Lsp\Features\Translations;
 
 use App\Lsp\Contracts\CompletionProvider;
-use App\Lsp\Data\Translations;
 use App\Lsp\Detection\AutocompleteArgument;
 use App\Lsp\Detection\AutocompleteArguments;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Document;
 use App\Lsp\Workspace;
+use Illuminate\Support\Collection;
 
 class TranslationParameterCompletionProvider implements CompletionProvider
 {
@@ -31,7 +31,7 @@ class TranslationParameterCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('translationCompletion', true)) {
+        if (!$this->workspace->config->boolean('translationCompletion', true)) {
             return [];
         }
 
@@ -39,7 +39,7 @@ class TranslationParameterCompletionProvider implements CompletionProvider
             ->matching($this->patterns())
             ->values()
             ->filter(fn (AutocompleteArgument $argument): bool => $argument->isArray() && $argument->isArrayKeyCompletion())
-            ->flatMap(fn (AutocompleteArgument $argument): array => $this->toCompletions($argument, $this->workspace->data->translations()))
+            ->flatMap(fn (AutocompleteArgument $argument): array => $this->toCompletions($argument))
             ->values()
             ->all();
     }
@@ -66,7 +66,7 @@ class TranslationParameterCompletionProvider implements CompletionProvider
      *
      * @return array<int, array<string, mixed>>
      */
-    protected function toCompletions(AutocompleteArgument $argument, Translations $translations): array
+    protected function toCompletions(AutocompleteArgument $argument): array
     {
         $translationKey = $argument->stringValueAt(0);
 
@@ -74,15 +74,16 @@ class TranslationParameterCompletionProvider implements CompletionProvider
             return [];
         }
 
-        $translation = $translations->translations()->get(str_replace('\\', '', $translationKey));
+        $group = $this->translationGroups()->firstWhere('key', str_replace('\\', '', $translationKey));
+        $translation = is_array($group) ? $group['locales'] : null;
 
-        if (! is_array($translation)) {
+        if (!is_array($translation)) {
             return [];
         }
 
-        $item = $this->defaultTranslation($translation, $translations);
+        $item = $this->defaultTranslation($translation);
 
-        if (! is_array($item)) {
+        if (!is_array($item)) {
             return [];
         }
 
@@ -106,10 +107,44 @@ class TranslationParameterCompletionProvider implements CompletionProvider
      * @param  array<string, array<string, mixed>>  $translation
      * @return array<string, mixed>|null
      */
-    protected function defaultTranslation(array $translation, Translations $translations): ?array
+    protected function defaultTranslation(array $translation): ?array
     {
-        $item = $translation[$translations->defaultLocale()] ?? reset($translation);
+        $item = $translation[$this->defaultLocale()] ?? reset($translation);
 
         return is_array($item) ? $item : null;
+    }
+
+    /**
+     * Get the available translation groups.
+     *
+     * @return Collection<int, array{key: string, locales: array<string, array<string, mixed>>}>
+     */
+    protected function translationGroups(): Collection
+    {
+        return collect($this->translationData()['translations'] ?? [])
+            ->filter(fn (mixed $translation): bool => is_array($translation))
+            ->map(fn (array $locales, string $key): array => [
+                'key'     => $key,
+                'locales' => $locales,
+            ])
+            ->values();
+    }
+
+    /**
+     * Get the default translation locale.
+     */
+    protected function defaultLocale(): string
+    {
+        return (string) ($this->translationData()['default'] ?? '');
+    }
+
+    /**
+     * Get the raw translation data.
+     *
+     * @return array<string, mixed>
+     */
+    protected function translationData(): array
+    {
+        return $this->workspace->data->translations()->get();
     }
 }

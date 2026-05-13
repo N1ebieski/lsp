@@ -27,13 +27,10 @@ class MixHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('mixHover', true)) {
+        if (!$this->workspace->config->boolean('mixHover', true)) {
             return null;
         }
 
-        return (new MixDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->mixManifest()->manifest(),
-        ))->hover($document, $position);
+        return (new MixDocumentMapper($this->workspace))->hover($document, $position);
     }
 }

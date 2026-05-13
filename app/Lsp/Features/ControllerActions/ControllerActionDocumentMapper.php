@@ -15,14 +15,9 @@ class ControllerActionDocumentMapper extends DocumentMapper
 {
     /**
      * Create a new controller action document mapper instance.
-     *
-     * @param  Collection<string, array<string, mixed>>  $routes
-     * @param  Collection<int, string>|null  $controllers
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Collection $routes,
-        protected ?Collection $controllers = null,
     ) {
         //
     }
@@ -85,7 +80,7 @@ class ControllerActionDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || ! str_contains($value, '@') || $this->routes->has($value)) {
+        if ($value === null || ! str_contains($value, '@') || $this->find($argument) !== null) {
             return [];
         }
 
@@ -109,7 +104,7 @@ class ControllerActionDocumentMapper extends DocumentMapper
             return [];
         }
 
-        return ($this->controllers ?? collect())
+        return $this->controllers()
             ->filter(fn (mixed $controller): bool => is_string($controller) && $controller !== '')
             ->map(fn (string $controller): array => [
                 'label'    => $controller,
@@ -130,8 +125,34 @@ class ControllerActionDocumentMapper extends DocumentMapper
      */
     protected function find(DetectedArgument $argument): ?array
     {
-        $route = $this->routes->get($argument->stringValue());
+        $value = $argument->stringValue();
+
+        if ($value === null) {
+            return null;
+        }
+
+        $route = $this->routes()->firstWhere('action', $value);
 
         return is_array($route) ? $route : null;
+    }
+
+    /**
+     * Get the available routes.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function routes(): Collection
+    {
+        return $this->workspace->data->routes()->get();
+    }
+
+    /**
+     * Get the available controllers.
+     *
+     * @return Collection<int, string>
+     */
+    protected function controllers(): Collection
+    {
+        return $this->workspace->data->controllers()->get();
     }
 }

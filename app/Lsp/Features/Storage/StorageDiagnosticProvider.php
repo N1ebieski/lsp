@@ -26,13 +26,10 @@ class StorageDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('storageDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('storageDiagnostics', true)) {
             return [];
         }
 
-        return (new StorageDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->configs()->storageDisks(),
-        ))->diagnostics($document);
+        return (new StorageDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

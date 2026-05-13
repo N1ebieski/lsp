@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Lsp\Features\Translations;
 
-use App\Lsp\Data\Translations;
 use App\Lsp\Detection\AutocompleteArgument;
 use App\Lsp\Detection\DetectedArgument;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Features\Support\DocumentMapper;
 use App\Lsp\Workspace;
+use Illuminate\Support\Collection;
 
 class TranslationDocumentMapper extends DocumentMapper
 {
@@ -18,7 +18,6 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-        protected Translations $translations,
     ) {
         //
     }
@@ -44,14 +43,14 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     protected function toLinks(DetectedArgument $argument): array
     {
-        $translation = $this->translations->find($argument->stringValue());
+        $translation = $this->find($argument->stringValue());
 
-        if (! is_array($translation)) {
+        if (!is_array($translation)) {
             return [];
         }
 
         $lang = $this->lang($argument);
-        $default = $this->translations->defaultLocale();
+        $default = $this->defaultLocale();
         $item = $translation[$lang] ?? $translation[$default] ?? reset($translation);
 
         return is_array($item) && is_string($item['path'] ?? null)
@@ -67,14 +66,14 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     protected function toHover(DetectedArgument $argument, array $position): ?array
     {
-        $translation = $this->translations->find($argument->stringValue());
+        $translation = $this->find($argument->stringValue());
 
-        if (! is_array($translation)) {
+        if (!is_array($translation)) {
             return null;
         }
 
         $lines = collect($translation)
-            ->map(fn (array $item, string $locale): string => "`{$locale}`: {$item['value']}\n\n".$this->markdownPath((string) $item['path'], is_numeric($item['line'] ?? null) ? (int) $item['line'] : null))
+            ->map(fn (array $item, string $locale): string => "`{$locale}`: {$item['value']}\n\n" . $this->markdownPath((string) $item['path'], is_numeric($item['line'] ?? null) ? (int) $item['line'] : null))
             ->values()
             ->all();
 
@@ -96,7 +95,7 @@ class TranslationDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || is_array($this->translations->find($value))) {
+        if ($value === null || is_array($this->find($value))) {
             return [];
         }
 
@@ -116,11 +115,13 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     protected function toCompletions(AutocompleteArgument $argument): array
     {
-        $translations = $this->translations->translations();
+        $translations = $this->translationGroups();
         $includeDetail = $translations->count() < 200;
 
         return $translations
-            ->map(function (array $translation, string $key) use ($argument, $includeDetail): array {
+            ->map(function (array $group) use ($argument, $includeDetail): array {
+                $key = $group['key'];
+                $translation = $group['locales'];
                 $item = [
                     'label'    => $key,
                     'kind'     => 12,
@@ -151,9 +152,9 @@ class TranslationDocumentMapper extends DocumentMapper
         $class = $argument->item()['className'] ?? '';
         $indexes = [
             Pattern::contract('Translation\\Translator') => ['get' => 2, 'choice' => 3],
-            'Lang' => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
-            Pattern::support('Facades\\Lang') => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
-            '' => ['__' => 2, 'trans' => 2, '@lang' => 2, 'trans_choice' => 3],
+            'Lang'                                       => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
+            Pattern::support('Facades\\Lang')            => ['has' => 1, 'hasForLocale' => 1, 'get' => 2, 'choice' => 3],
+            ''                                           => ['__' => 2, 'trans' => 2, '@lang' => 2, 'trans_choice' => 3],
         ];
 
         $index = is_string($method) ? ($indexes[$class][$method] ?? null) : null;
@@ -183,8 +184,8 @@ class TranslationDocumentMapper extends DocumentMapper
     protected function completionText(string $key, AutocompleteArgument $argument): string
     {
         return match ($argument->precedingCharacter()) {
-            "'" => str_replace("'", "\\'", $key),
-            '"' => str_replace('"', '\\"', $key),
+            "'"     => str_replace("'", "\\'", $key),
+            '"'     => str_replace('"', '\\"', $key),
             default => $key,
         };
     }
@@ -197,8 +198,66 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     protected function defaultTranslation(array $translation): ?array
     {
-        $item = $translation[$this->translations->defaultLocale()] ?? reset($translation);
+        $item = $translation[$this->defaultLocale()] ?? reset($translation);
 
         return is_array($item) ? $item : null;
+    }
+
+    /**
+     * Find a translation by exact key or matching prefix.
+     *
+     * @return array<string, array<string, mixed>>|null
+     */
+    protected function find(?string $key): ?array
+    {
+        if ($key === null) {
+            return null;
+        }
+
+        $key = str_replace('\\', '', $key);
+        $group = $this->translationGroups()->firstWhere('key', $key);
+
+        if (is_array($group)) {
+            return $group['locales'];
+        }
+
+        $group = $this->translationGroups()
+            ->first(fn (array $group): bool => str_starts_with($group['key'], "{$key}."));
+
+        return is_array($group) ? $group['locales'] : null;
+    }
+
+    /**
+     * Get the available translation groups.
+     *
+     * @return Collection<int, array{key: string, locales: array<string, array<string, mixed>>}>
+     */
+    protected function translationGroups(): Collection
+    {
+        return collect($this->translationData()['translations'] ?? [])
+            ->filter(fn (mixed $translation): bool => is_array($translation))
+            ->map(fn (array $locales, string $key): array => [
+                'key'     => $key,
+                'locales' => $locales,
+            ])
+            ->values();
+    }
+
+    /**
+     * Get the default translation locale.
+     */
+    protected function defaultLocale(): string
+    {
+        return (string) ($this->translationData()['default'] ?? '');
+    }
+
+    /**
+     * Get the raw translation data.
+     *
+     * @return array<string, mixed>
+     */
+    protected function translationData(): array
+    {
+        return $this->workspace->data->translations()->get();
     }
 }

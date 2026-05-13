@@ -30,9 +30,6 @@ class AuthLinkProvider implements LinkProvider
             return [];
         }
 
-        return (new AuthDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->auth()->policies(),
-        ))->links($document);
+        return (new AuthDocumentMapper($this->workspace))->links($document);
     }
 }

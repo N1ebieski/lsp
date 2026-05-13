@@ -6,7 +6,7 @@
 
 ## LSP Server
 
-The LSP server lives in `app/Lsp/` and is invoked via `lsp` or `lsp lsp`. It runs as a long-lived process over stdio.
+The LSP server lives in `app/Lsp/` and is invoked via `server` or `server lsp`. It runs as a long-lived process over stdio.
 
 The goal is to provide completion, hover, diagnostic, link, and code-action behavior from the LSP server.
 

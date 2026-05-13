@@ -27,13 +27,10 @@ class TranslationCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('translationCompletion', true)) {
+        if (!$this->workspace->config->boolean('translationCompletion', true)) {
             return [];
         }
 
-        return (new TranslationDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->translations(),
-        ))->completions($document, $position);
+        return (new TranslationDocumentMapper($this->workspace))->completions($document, $position);
     }
 }

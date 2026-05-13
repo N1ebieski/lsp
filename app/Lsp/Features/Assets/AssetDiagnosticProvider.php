@@ -26,12 +26,10 @@ class AssetDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('assetDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('assetDiagnostics', true)) {
             return [];
         }
 
-        return (new AssetDocumentMapper(
-            $this->workspace->data->assets()->get()->keyBy('path'),
-        ))->diagnostics($document);
+        return (new AssetDocumentMapper($this->workspace))->diagnostics($document);
     }
 }

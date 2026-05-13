@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Lsp\Data;
 
-use Illuminate\Support\Collection;
-
 class Auth extends DataProvider
 {
     /**
@@ -39,17 +37,6 @@ class Auth extends DataProvider
             'app/Models/{,*,**/*}.php',
             'app/Policies/{,*,**/*}.php',
         ];
-    }
-
-    /**
-     * Get policies keyed by ability.
-     *
-     * @return Collection<string, Collection<int, array<string, mixed>>>
-     */
-    public function policies(): Collection
-    {
-        return collect($this->get()['policies'] ?? [])
-            ->map(fn (array $items): Collection => collect($items));
     }
 
     /**

@@ -27,13 +27,10 @@ class MiddlewareHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('middlewareHover', true)) {
+        if (!$this->workspace->config->boolean('middlewareHover', true)) {
             return null;
         }
 
-        return (new MiddlewareDocumentMapper(
-            $this->workspace,
-            $this->workspace->data->middleware()->get(),
-        ))->hover($document, $position);
+        return (new MiddlewareDocumentMapper($this->workspace))->hover($document, $position);
     }
 }
