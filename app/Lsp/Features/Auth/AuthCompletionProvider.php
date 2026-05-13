@@ -15,9 +15,7 @@ class AuthCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide auth completions for the given document and position.

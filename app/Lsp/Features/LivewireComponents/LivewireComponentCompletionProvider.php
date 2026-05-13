@@ -15,9 +15,7 @@ class LivewireComponentCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Livewire component completions for the given document and position.

@@ -15,9 +15,7 @@ class AuthDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide auth diagnostics for the given document.

@@ -15,9 +15,7 @@ class ViewCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide view completions for the given document and position.

@@ -19,9 +19,7 @@ class InertiaPropertyCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Inertia property completions for the given document and position.

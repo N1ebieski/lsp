@@ -17,9 +17,7 @@ class ViewCodeActionProvider implements CodeActionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide view code actions for the given document.

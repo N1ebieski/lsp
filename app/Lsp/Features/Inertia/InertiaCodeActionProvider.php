@@ -18,9 +18,7 @@ class InertiaCodeActionProvider implements CodeActionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Inertia code actions for the given document.

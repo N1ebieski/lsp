@@ -18,9 +18,7 @@ class TranslationDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get translation detection patterns.

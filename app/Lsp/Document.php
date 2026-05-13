@@ -30,9 +30,7 @@ class Document
     public function __construct(
         public readonly string $uri,
         public readonly string $content,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Detect parser items in the document.

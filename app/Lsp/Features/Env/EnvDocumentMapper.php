@@ -18,9 +18,7 @@ class EnvDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get env detection patterns.

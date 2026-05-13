@@ -15,9 +15,7 @@ class AppBindingHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide app binding hover for the given document and position.

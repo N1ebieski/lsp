@@ -19,9 +19,7 @@ class TranslationParameterCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide translation parameter completions for the given document and position.

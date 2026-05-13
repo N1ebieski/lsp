@@ -24,9 +24,7 @@ class AutocompleteArguments
     protected function __construct(
         protected Document $document,
         protected array $position,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Create a selector for the given document and position.

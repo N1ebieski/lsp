@@ -15,9 +15,7 @@ class ViewLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide view links for the given document.

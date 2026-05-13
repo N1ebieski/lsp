@@ -95,9 +95,7 @@ class EloquentCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Eloquent completions for the given document and position.

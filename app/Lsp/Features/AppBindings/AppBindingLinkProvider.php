@@ -15,9 +15,7 @@ class AppBindingLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide app binding document links for the given document.

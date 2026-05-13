@@ -15,9 +15,7 @@ class AuthLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide auth document links for the given document.

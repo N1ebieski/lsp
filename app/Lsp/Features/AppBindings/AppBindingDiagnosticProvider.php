@@ -15,9 +15,7 @@ class AppBindingDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide app binding diagnostics for the given document.

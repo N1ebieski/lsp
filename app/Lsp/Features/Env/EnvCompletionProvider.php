@@ -15,9 +15,7 @@ class EnvCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide env completions for the given document and position.

@@ -15,9 +15,7 @@ class MiddlewareHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide middleware hover for the given document and position.

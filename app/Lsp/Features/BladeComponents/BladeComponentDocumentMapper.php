@@ -16,9 +16,7 @@ class BladeComponentDocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get Blade component document links.

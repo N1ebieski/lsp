@@ -15,9 +15,7 @@ class MixDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide mix diagnostics for the given document.

@@ -15,9 +15,7 @@ class ViewDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide view diagnostics for the given document.

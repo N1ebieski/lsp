@@ -21,9 +21,7 @@ class DetectedArguments
      */
     protected function __construct(
         protected Document $document,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Create a selector for the given document.

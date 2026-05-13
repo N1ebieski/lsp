@@ -15,9 +15,7 @@ class TranslationHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide translation hover for the given document and position.

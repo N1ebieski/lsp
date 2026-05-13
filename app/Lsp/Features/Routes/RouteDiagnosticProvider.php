@@ -15,9 +15,7 @@ class RouteDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide route diagnostics for the given document.

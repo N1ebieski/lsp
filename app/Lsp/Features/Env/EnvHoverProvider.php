@@ -15,9 +15,7 @@ class EnvHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide env hover for the given document and position.

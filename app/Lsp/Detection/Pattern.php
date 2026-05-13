@@ -18,9 +18,7 @@ class Pattern
         protected array $classes,
         protected array $methods,
         protected array $arguments,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Create a method call pattern.

@@ -19,9 +19,7 @@ class AssetDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get asset detection patterns.

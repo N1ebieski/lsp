@@ -15,9 +15,7 @@ class InertiaDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Inertia diagnostics for the given document.

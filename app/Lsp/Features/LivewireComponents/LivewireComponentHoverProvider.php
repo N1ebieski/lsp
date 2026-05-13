@@ -15,9 +15,7 @@ class LivewireComponentHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Livewire component hover for the given document and position.

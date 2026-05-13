@@ -15,9 +15,7 @@ class EnvLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide env document links for the given document.

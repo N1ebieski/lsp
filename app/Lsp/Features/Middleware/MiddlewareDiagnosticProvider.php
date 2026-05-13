@@ -15,9 +15,7 @@ class MiddlewareDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide middleware diagnostics for the given document.

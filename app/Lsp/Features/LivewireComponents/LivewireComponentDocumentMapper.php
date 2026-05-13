@@ -16,9 +16,7 @@ class LivewireComponentDocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get Livewire component document links.

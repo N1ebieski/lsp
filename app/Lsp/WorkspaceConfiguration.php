@@ -18,9 +18,7 @@ class WorkspaceConfiguration
      */
     public function __construct(
         protected array $options = [],
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Replace the stored configuration options.

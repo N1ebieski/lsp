@@ -13,9 +13,7 @@ class Uri
      */
     public function __construct(
         protected string $uri,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Create a URI instance from the given string.

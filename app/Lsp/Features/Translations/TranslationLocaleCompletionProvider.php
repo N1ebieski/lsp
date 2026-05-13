@@ -19,9 +19,7 @@ class TranslationLocaleCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide translation locale completions for the given document and position.

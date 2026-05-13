@@ -20,9 +20,7 @@ class AutocompleteArgument
         protected int $argumentIndex,
         protected Document $document,
         protected array $position,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the autocomplete parser item.

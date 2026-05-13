@@ -18,9 +18,7 @@ class ViewDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get view detection patterns.

@@ -15,9 +15,7 @@ class BladeComponentLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Blade component document links for the given document.

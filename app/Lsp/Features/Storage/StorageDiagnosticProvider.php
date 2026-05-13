@@ -15,9 +15,7 @@ class StorageDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide storage disk diagnostics for the given document.

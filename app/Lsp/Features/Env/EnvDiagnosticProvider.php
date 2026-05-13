@@ -15,9 +15,7 @@ class EnvDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide env diagnostics for the given document.

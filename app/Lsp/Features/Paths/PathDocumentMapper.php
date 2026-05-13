@@ -19,9 +19,7 @@ class PathDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get path helper detection patterns.

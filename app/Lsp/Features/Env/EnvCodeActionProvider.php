@@ -17,9 +17,7 @@ class EnvCodeActionProvider implements CodeActionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide env code actions for the given document.

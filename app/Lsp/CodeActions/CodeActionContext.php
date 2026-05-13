@@ -17,9 +17,7 @@ class CodeActionContext
     public function __construct(
         public readonly array $range,
         public readonly array $context,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Determine if the request accepts the given action kind.

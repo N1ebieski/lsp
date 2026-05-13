@@ -18,9 +18,7 @@ class DetectedArgument
         protected array $item,
         protected int $argumentIndex,
         protected array $param,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the matched parser item.

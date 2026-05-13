@@ -15,9 +15,7 @@ class StorageCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide storage disk completions for the given document and position.

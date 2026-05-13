@@ -21,9 +21,7 @@ class JsonRpcRequest
         protected string $method,
         protected array $params,
         protected bool $notification = false,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Create a new request instance from the given JSON-RPC payload.

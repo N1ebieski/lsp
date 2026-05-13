@@ -15,9 +15,7 @@ class ControllerActionCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide controller action completions for the given document and position.

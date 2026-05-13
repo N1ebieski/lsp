@@ -15,9 +15,7 @@ class InertiaLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Inertia document links for the given document.

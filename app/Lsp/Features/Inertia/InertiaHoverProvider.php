@@ -15,9 +15,7 @@ class InertiaHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Inertia hover for the given document and position.

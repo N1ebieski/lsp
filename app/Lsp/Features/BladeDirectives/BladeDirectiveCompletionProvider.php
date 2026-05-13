@@ -15,9 +15,7 @@ class BladeDirectiveCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide Blade directive completions for the given document and position.

@@ -15,9 +15,7 @@ class StorageLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide storage disk links for the given document.

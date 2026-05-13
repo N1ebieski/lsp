@@ -15,9 +15,7 @@ class RouteCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide route completions for the given document and position.

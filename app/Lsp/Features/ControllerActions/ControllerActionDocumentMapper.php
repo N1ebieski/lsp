@@ -18,9 +18,7 @@ class ControllerActionDocumentMapper extends DocumentMapper
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get controller action detection patterns.

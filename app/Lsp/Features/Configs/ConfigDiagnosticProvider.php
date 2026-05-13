@@ -15,9 +15,7 @@ class ConfigDiagnosticProvider implements DiagnosticProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide config diagnostics for the given document.

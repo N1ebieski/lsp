@@ -15,9 +15,7 @@ class AuthHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide auth hover for the given document and position.

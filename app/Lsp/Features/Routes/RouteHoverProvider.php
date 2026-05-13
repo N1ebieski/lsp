@@ -15,9 +15,7 @@ class RouteHoverProvider implements HoverProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide route hover for the given document and position.

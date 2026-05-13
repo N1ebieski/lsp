@@ -15,9 +15,7 @@ class MiddlewareLinkProvider implements LinkProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide middleware links for the given document.

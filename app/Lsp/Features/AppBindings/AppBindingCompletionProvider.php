@@ -15,9 +15,7 @@ class AppBindingCompletionProvider implements CompletionProvider
      */
     public function __construct(
         protected Workspace $workspace,
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Provide app binding completions for the given document and position.
