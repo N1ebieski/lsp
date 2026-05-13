@@ -33,6 +33,16 @@ class WorkspaceConfiguration
     }
 
     /**
+     * Get the PHP command used to run Laravel scripts.
+     *
+     * @return string[]
+     */
+    public function phpCommand(): array
+    {
+        return (array) $this->data('phpCommand', ['php']);
+    }
+
+    /**
      * Get all stored configuration options.
      *
      * @param  array|mixed|null  $keys

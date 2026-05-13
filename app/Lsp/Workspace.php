@@ -10,16 +10,6 @@ use App\Lsp\Transport\JsonRpcRequest;
 class Workspace
 {
     /**
-     * The base URI for the workspace.
-     */
-    public readonly string $baseUri;
-
-    /**
-     * The decoded base path for the workspace.
-     */
-    public readonly string $basePath;
-
-    /**
      * The document manager for the workspace.
      */
     public readonly DocumentManager $documents;
@@ -35,11 +25,6 @@ class Workspace
     public readonly WorkspaceData $data;
 
     /**
-     * The workspace configuration.
-     */
-    public readonly WorkspaceConfiguration $config;
-
-    /**
      * The feature registry.
      */
     public readonly FeatureRegistry $features;
@@ -48,16 +33,13 @@ class Workspace
      * Create a new workspace instance.
      */
     public function __construct(
-        string $baseUri,
+        public readonly string $baseUri,
         public readonly Server $server,
+        public readonly WorkspaceConfiguration $config,
     ) {
-        $this->baseUri = $baseUri;
-        $this->basePath = Uri::of($baseUri)->path();
-
         $this->documents = new DocumentManager;
-        $this->php = new PhpRunner($this->basePath);
+        $this->php = new PhpRunner(Uri::of($baseUri)->path(), $config->phpCommand());
         $this->data = new WorkspaceData($this);
-        $this->config = new WorkspaceConfiguration;
         $this->features = new FeatureRegistry($this);
     }
 
@@ -141,12 +123,10 @@ class Workspace
             return null;
         }
 
-        $workspace = new self($rootUri, $server);
-
-        $workspace->config->replace(
+        $config = new WorkspaceConfiguration(
             $request->collect('initializationOptions')->all()
         );
 
-        return $workspace;
+        return new self($rootUri, $server, $config);
     }
 }

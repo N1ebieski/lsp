@@ -13,7 +13,7 @@ class PhpRunner
      */
     public function __construct(
         protected string $projectPath,
-        protected array $command = ['php', 'artisan', 'tinker'],
+        protected array $command,
     ) {}
 
     /**
@@ -31,7 +31,10 @@ class PhpRunner
     {
         $command = [
             ...$this->command,
-            "--execute={$this->templateCode($code)}",
+            'artisan',
+            'tinker',
+            '--execute',
+            $this->templateCode($code),
         ];
 
         $process = proc_open($command, [
