@@ -28,7 +28,6 @@
         "stillat/blade-parser": "^1.10"
     },
     "require-dev": {
-        "laravel/framework": "^11.0",
         "laravel/pint": "^1.15.2",
         "mockery/mockery": "^1.6.11",
         "pestphp/pest": "^2.34.7"
@@ -36,7 +35,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/"
-        }
+        },
+        "exclude-from-classmap": [
+            "app/Lsp/Data/Templates/global.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
