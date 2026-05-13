@@ -42,7 +42,7 @@ class PhpRunner
             2 => ['pipe', 'w'],
         ], $pipes, $this->projectPath);
 
-        if (! is_resource($process)) {
+        if (!is_resource($process)) {
             return null;
         }
 
@@ -56,9 +56,9 @@ class PhpRunner
 
         if ($exitCode !== 0) {
             info('PHP runner error.', [
-                'command' => $command,
-                'stdout' => $output,
-                'stderr' => $error,
+                'command'  => $command,
+                'stdout'   => $output,
+                'stderr'   => $error,
                 'exitCode' => $exitCode,
             ]);
 
@@ -84,7 +84,7 @@ class PhpRunner
     protected function templateCode(string $code): string
     {
         return implode(PHP_EOL, [
-            $this->normalizeCode(file_get_contents(__DIR__.'/Data/Templates/global.php') ?: ''),
+            $this->normalizeCode(file_get_contents(__DIR__ . '/Data/Templates/global.php') ?: ''),
             $this->normalizeCode($code),
         ]);
     }

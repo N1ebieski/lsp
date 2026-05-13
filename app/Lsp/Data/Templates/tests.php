@@ -1,9 +1,21 @@
 <?php
 
-$tests = new class {
+use Illuminate\Support\Facades\File;
+use Pest\Contracts\HasPrintableTestCaseName;
+use Pest\Support\Str;
+use Pest\TestSuite;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Runner\TestSuiteLoader;
+use PHPUnit\TextUI\XmlConfiguration\LoadedFromFileConfiguration;
+use PHPUnit\TextUI\XmlConfiguration\Loader;
+use SebastianBergmann\FileIterator\Facade;
+
+$tests = new class
+{
     public function all(): array
     {
-        if (! $this->isPhpUnitInstalled()) {
+        if (!$this->isPhpUnitInstalled()) {
             return [];
         }
 
@@ -14,7 +26,7 @@ $tests = new class {
         return collect(
             $this->getTestSuites()
         )->map(fn ($suite) => [
-            'name' => $suite['name'],
+            'name'  => $suite['name'],
             'files' => collect(array_merge(
                 $this->collectPhpUnitTests($suite['files']),
                 $this->collectPestTests($suite['files']),
@@ -28,8 +40,8 @@ $tests = new class {
 
         return function (array $file) use ($directories) {
             return array_merge($file, [
-                'path' => $path = LspHelper::relativePath($file['path']),
-                'name' => str($path)->basename()->replace('.php', ''),
+                'path'        => $path = LspHelper::relativePath($file['path']),
+                'name'        => str($path)->basename()->replace('.php', ''),
                 'directories' => str($path)->dirname()
                     ->replace($directories, '')
                     ->ltrim(DIRECTORY_SEPARATOR)
@@ -41,19 +53,19 @@ $tests = new class {
 
     protected function isPhpUnitInstalled(): bool
     {
-        return class_exists(\PHPUnit\Framework\TestCase::class);
+        return class_exists(TestCase::class);
     }
 
     protected function isPestInstalled(): bool
     {
-        return class_exists(\Pest\TestSuite::class);
+        return class_exists(TestSuite::class);
     }
 
     protected function bootPest(): void
     {
         require_once base_path('vendor/pestphp/pest/overrides/Runner/TestSuiteLoader.php');
 
-        \Pest\TestSuite::getInstance(base_path(), 'tests');
+        TestSuite::getInstance(base_path(), 'tests');
 
         if (file_exists($pestFile = base_path('tests/Pest.php'))) {
             require_once $pestFile;
@@ -67,9 +79,9 @@ $tests = new class {
     {
         if (is_null($config = $this->loadConfig())) {
             return [[
-                'name' => 'default',
+                'name'        => 'default',
                 'directories' => [base_path('tests')],
-                'files' => $this->findTestFiles(base_path('tests')),
+                'files'       => $this->findTestFiles(base_path('tests')),
             ]];
         }
 
@@ -87,23 +99,23 @@ $tests = new class {
             }
 
             $result[] = [
-                'name' => $suite->name(),
+                'name'        => $suite->name(),
                 'directories' => collect($suite->directories()->asArray())->map->path()->all(),
-                'files' => $files->all(),
+                'files'       => $files->all(),
             ];
         }
 
         return $result;
     }
 
-    protected function loadConfig(): ?\PHPUnit\TextUI\XmlConfiguration\LoadedFromFileConfiguration
+    protected function loadConfig(): ?LoadedFromFileConfiguration
     {
         foreach ([
             base_path('phpunit.xml'),
             base_path('phpunit.xml.dist'),
         ] as $path) {
-            if (\Illuminate\Support\Facades\File::exists($path)) {
-                return (new \PHPUnit\TextUI\XmlConfiguration\Loader)->load($path);
+            if (File::exists($path)) {
+                return (new Loader)->load($path);
             }
         }
 
@@ -115,7 +127,7 @@ $tests = new class {
      */
     protected function findTestFiles(string $directory): array
     {
-        return (new \SebastianBergmann\FileIterator\Facade)->getFilesAsArray($directory, 'Test.php');
+        return (new Facade)->getFilesAsArray($directory, 'Test.php');
     }
 
     /**
@@ -124,11 +136,11 @@ $tests = new class {
      */
     protected function collectPestTests(array $files): array
     {
-        if (! $this->isPestInstalled()) {
+        if (!$this->isPestInstalled()) {
             return [];
         }
 
-        if (is_null($pest = \Pest\TestSuite::getInstance())) {
+        if (is_null($pest = TestSuite::getInstance())) {
             return [];
         }
 
@@ -140,13 +152,13 @@ $tests = new class {
             }
 
             $results[] = [
-                'path' => $path,
+                'path'  => $path,
                 'tests' => collect($factory->methods)
                     ->whereNotNull('description')
                     ->map(fn ($method) => [
-                        'name' => $method->description,
-                        'eventName' => \Pest\Support\Str::evaluable($method->description),
-                        'line' => (new ReflectionFunction($method->closure))->getStartLine(),
+                        'name'      => $method->description,
+                        'eventName' => Str::evaluable($method->description),
+                        'line'      => (new ReflectionFunction($method->closure))->getStartLine(),
                     ])
                     ->values()
                     ->all(),
@@ -162,7 +174,7 @@ $tests = new class {
      */
     protected function collectPhpUnitTests(array $files): array
     {
-        $loader = new \PHPUnit\Runner\TestSuiteLoader;
+        $loader = new TestSuiteLoader;
 
         $results = [];
 
@@ -173,13 +185,13 @@ $tests = new class {
                 continue;
             }
 
-            if (! $this->isPhpUnitTest($reflection)) {
+            if (!$this->isPhpUnitTest($reflection)) {
                 continue;
             }
 
             $tests = $this->extractTestMethods($reflection);
 
-            if (! empty($tests)) {
+            if (!empty($tests)) {
                 $results[] = compact('path', 'tests');
             }
         }
@@ -189,16 +201,16 @@ $tests = new class {
 
     protected function isPhpUnitTest(ReflectionClass $reflection): bool
     {
-        if (! $this->isPestInstalled()) {
-            return $reflection->isSubclassOf(\PHPUnit\Framework\TestCase::class);
+        if (!$this->isPestInstalled()) {
+            return $reflection->isSubclassOf(TestCase::class);
         }
 
-        return $reflection->isSubclassOf(\PHPUnit\Framework\TestCase::class)
-            && ! $reflection->implementsInterface(\Pest\Contracts\HasPrintableTestCaseName::class);
+        return $reflection->isSubclassOf(TestCase::class)
+            && !$reflection->implementsInterface(HasPrintableTestCaseName::class);
     }
 
     /**
-     * @param  ReflectionClass<\PHPUnit\Framework\TestCase>  $reflection
+     * @param  ReflectionClass<TestCase>  $reflection
      * @return array<int, array{name: string, line: int}>
      */
     protected function extractTestMethods(ReflectionClass $reflection): array
@@ -210,14 +222,14 @@ $tests = new class {
                 continue;
             }
 
-            if (! $this->isTestMethod($method)) {
+            if (!$this->isTestMethod($method)) {
                 continue;
             }
 
             $tests[] = [
-                'name' => $name = $method->getName(),
+                'name'      => $name = $method->getName(),
                 'eventName' => $name,
-                'line' => $method->getStartLine(),
+                'line'      => $method->getStartLine(),
             ];
         }
 
@@ -227,7 +239,7 @@ $tests = new class {
     protected function isTestMethod(ReflectionMethod $method): bool
     {
         return str_starts_with($method->getName(), 'test')
-            || $method->getAttributes(\PHPUnit\Framework\Attributes\Test::class) !== [];
+            || $method->getAttributes(Test::class) !== [];
     }
 };
 

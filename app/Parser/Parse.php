@@ -4,6 +4,7 @@ namespace App\Parser;
 
 use App\Contexts\AbstractContext;
 use App\Contexts\Base;
+use App\Parsers\AbstractParser;
 use Microsoft\PhpParser\Node;
 
 class Parse
@@ -30,7 +31,7 @@ class Parse
         $context = $currentContext ?? new Base;
 
         if (class_exists($parserClass)) {
-            /** @var \App\Parsers\AbstractParser */
+            /** @var AbstractParser */
             $parser = app()->make($parserClass);
             $parser->context($context)->depth($depth + 1);
 

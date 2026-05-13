@@ -48,7 +48,7 @@ class WorkspaceConfiguration
      */
     public function all($keys = null): array
     {
-        if (! $keys) {
+        if (!$keys) {
             return $this->options;
         }
 

@@ -1,73 +1,73 @@
 <?php
 
-function vsCodeGetReflectionMethod(ReflectionClass $reflected): ReflectionMethod {
-  return match (true) {
-    $reflected->hasMethod('__invoke') => $reflected->getMethod('__invoke'),
-    default => $reflected->getMethod('handle'),
-  };
+function vsCodeGetReflectionMethod(ReflectionClass $reflected): ReflectionMethod
+{
+    return match (true) {
+        $reflected->hasMethod('__invoke') => $reflected->getMethod('__invoke'),
+        default                           => $reflected->getMethod('handle'),
+    };
 }
 
 echo collect(app("Illuminate\Contracts\Http\Kernel")->getMiddlewareGroups())
-  ->merge(app("Illuminate\Contracts\Http\Kernel")->getRouteMiddleware())
-  ->merge(app("router")->getMiddleware())
-  ->map(function ($middleware, $key) {
-    $result = [
-      "class" => null,
-      "path" => null,
-      "line" => null,
-      "parameters" => null,
-      "groups" => [],
-    ];
+    ->merge(app("Illuminate\Contracts\Http\Kernel")->getRouteMiddleware())
+    ->merge(app('router')->getMiddleware())
+    ->map(function ($middleware, $key) {
+        $result = [
+            'class'      => null,
+            'path'       => null,
+            'line'       => null,
+            'parameters' => null,
+            'groups'     => [],
+        ];
 
-    if (is_array($middleware)) {
-      $result["groups"] = collect($middleware)->map(function ($m) {
-        if (!class_exists($m)) {
-          return [
-            "class" => $m,
-            "path" => null,
-            "line" => null
-          ];
+        if (is_array($middleware)) {
+            $result['groups'] = collect($middleware)->map(function ($m) {
+                if (!class_exists($m)) {
+                    return [
+                        'class' => $m,
+                        'path'  => null,
+                        'line'  => null,
+                    ];
+                }
+
+                $reflected = new ReflectionClass($m);
+                $reflectedMethod = vsCodeGetReflectionMethod($reflected);
+
+                return [
+                    'class' => $m,
+                    'path'  => LspHelper::relativePath($reflected->getFileName()),
+                    'line'  => $reflectedMethod->getFileName() === $reflected->getFileName()
+                        ? $reflectedMethod->getStartLine()
+                        : null,
+                ];
+            })->all();
+
+            return $result;
         }
 
-        $reflected = new ReflectionClass($m);
+        $reflected = new ReflectionClass($middleware);
         $reflectedMethod = vsCodeGetReflectionMethod($reflected);
 
-        return [
-          "class" => $m,
-          "path" => LspHelper::relativePath($reflected->getFileName()),
-          "line" =>
-              $reflectedMethod->getFileName() === $reflected->getFileName()
-              ? $reflectedMethod->getStartLine()
-              : null
-        ];
-      })->all();
+        $result = array_merge($result, [
+            'class' => $middleware,
+            'path'  => LspHelper::relativePath($reflected->getFileName()),
+            'line'  => $reflectedMethod->getStartLine(),
+        ]);
 
-      return $result;
-    }
+        $parameters = collect($reflectedMethod->getParameters())
+            ->filter(function ($rc) {
+                return $rc->getName() !== 'request' && $rc->getName() !== 'next';
+            })
+            ->map(function ($rc) {
+                return $rc->getName() . ($rc->isVariadic() ? '...' : '');
+            });
 
-    $reflected = new ReflectionClass($middleware);
-    $reflectedMethod = vsCodeGetReflectionMethod($reflected);
+        if ($parameters->isEmpty()) {
+            return $result;
+        }
 
-    $result = array_merge($result, [
-      "class" => $middleware,
-      "path" => LspHelper::relativePath($reflected->getFileName()),
-      "line" => $reflectedMethod->getStartLine(),
-    ]);
-
-    $parameters = collect($reflectedMethod->getParameters())
-      ->filter(function ($rc) {
-        return $rc->getName() !== "request" && $rc->getName() !== "next";
-      })
-      ->map(function ($rc) {
-        return $rc->getName() . ($rc->isVariadic() ? "..." : "");
-      });
-
-    if ($parameters->isEmpty()) {
-      return $result;
-    }
-
-    return array_merge($result, [
-      "parameters" => $parameters->implode(",")
-    ]);
-  })
-  ->toJson();
+        return array_merge($result, [
+            'parameters' => $parameters->implode(','),
+        ]);
+    })
+    ->toJson();

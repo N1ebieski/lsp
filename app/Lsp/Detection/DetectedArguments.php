@@ -92,7 +92,7 @@ class DetectedArguments
         $arguments = [];
 
         foreach ($this->patterns as $pattern) {
-            if (! $pattern->matches($item)) {
+            if (!$pattern->matches($item)) {
                 continue;
             }
 
@@ -115,7 +115,7 @@ class DetectedArguments
     {
         $arguments = $item['arguments']['children'];
 
-        if (! isset($arguments[$argumentIndex])) {
+        if (!isset($arguments[$argumentIndex])) {
             return [];
         }
 
@@ -124,7 +124,7 @@ class DetectedArguments
         $detected = [];
 
         foreach ($params as $param) {
-            if (! in_array($param['type'], $types, true)) {
+            if (!in_array($param['type'], $types, true)) {
                 continue;
             }
 

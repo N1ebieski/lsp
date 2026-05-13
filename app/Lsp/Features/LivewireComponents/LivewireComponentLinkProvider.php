@@ -24,7 +24,7 @@ class LivewireComponentLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('livewireComponentLink', true)) {
+        if (!$this->workspace->config->boolean('livewireComponentLink', true)) {
             return [];
         }
 

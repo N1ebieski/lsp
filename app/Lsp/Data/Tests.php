@@ -11,7 +11,7 @@ class Tests extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/tests.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/tests.php') ?: '';
     }
 
     /**

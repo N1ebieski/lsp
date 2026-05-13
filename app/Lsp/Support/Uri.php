@@ -38,7 +38,7 @@ class Uri
     {
         $basePath = parse_url($this->uri, PHP_URL_PATH);
 
-        if (! is_string($basePath)) {
+        if (!is_string($basePath)) {
             return '';
         }
 
@@ -58,7 +58,7 @@ class Uri
     {
         $basePath = $this->path();
 
-        if (! str_contains($path, $basePath)) {
+        if (!str_contains($path, $basePath)) {
             return $path;
         }
 

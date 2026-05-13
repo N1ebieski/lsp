@@ -7,6 +7,7 @@ namespace App\Lsp\Data;
 use App\Lsp\Workspace;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class InertiaViews extends DataProvider
 {
@@ -120,8 +121,8 @@ class InertiaViews extends DataProvider
         }
 
         return collect(Finder::create()->files()->in($absolute))
-            ->filter(fn (\Symfony\Component\Finder\SplFileInfo $file): bool => $extensions->contains($file->getExtension()))
-            ->map(function (\Symfony\Component\Finder\SplFileInfo $file) use ($absolute, $path): array {
+            ->filter(fn (SplFileInfo $file): bool => $extensions->contains($file->getExtension()))
+            ->map(function (SplFileInfo $file) use ($absolute, $path): array {
                 $relative = ltrim(str_replace($absolute, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR);
                 $name = preg_replace('/\.[^.]+$/', '', $relative) ?: $relative;
 

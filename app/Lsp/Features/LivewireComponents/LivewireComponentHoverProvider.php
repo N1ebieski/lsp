@@ -25,7 +25,7 @@ class LivewireComponentHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('livewireComponentHover', true)) {
+        if (!$this->workspace->config->boolean('livewireComponentHover', true)) {
             return null;
         }
 

@@ -7,6 +7,7 @@ namespace App\Lsp\Data;
 use App\Lsp\Workspace;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class Controllers extends DataProvider
 {
@@ -61,13 +62,13 @@ class Controllers extends DataProvider
         $this->loaded = true;
         $path = $this->workspace->path('app/Http/Controllers');
 
-        if (! is_dir($path)) {
+        if (!is_dir($path)) {
             return $this->data = collect();
         }
 
         return $this->data = collect(Finder::create()->files()->name('*.php')->in($path))
-            ->filter(fn (\Symfony\Component\Finder\SplFileInfo $file): bool => $file->getSize() <= 50_000)
-            ->flatMap(fn (\Symfony\Component\Finder\SplFileInfo $file): array => $this->actionsIn((string) file_get_contents($file->getRealPath() ?: $file->getPathname())))
+            ->filter(fn (SplFileInfo $file): bool => $file->getSize() <= 50_000)
+            ->flatMap(fn (SplFileInfo $file): array => $this->actionsIn((string) file_get_contents($file->getRealPath() ?: $file->getPathname())))
             ->unique()
             ->values();
     }
@@ -79,11 +80,11 @@ class Controllers extends DataProvider
      */
     protected function actionsIn(string $source): array
     {
-        if (! preg_match('/class\s+([A-Za-z0-9_]+)\s+extends\s+.+/', $source, $classMatch)) {
+        if (!preg_match('/class\s+([A-Za-z0-9_]+)\s+extends\s+.+/', $source, $classMatch)) {
             return [];
         }
 
-        if (! preg_match('/namespace\s+(.+?);/', $source, $namespaceMatch)) {
+        if (!preg_match('/namespace\s+(.+?);/', $source, $namespaceMatch)) {
             return [];
         }
 
@@ -109,7 +110,7 @@ class Controllers extends DataProvider
     {
         $namespace = trim($namespace);
 
-        if (! preg_match('/\\\\Http\\\\Controllers(?:\\\\(.+))?$/', $namespace, $match)) {
+        if (!preg_match('/\\\\Http\\\\Controllers(?:\\\\(.+))?$/', $namespace, $match)) {
             return null;
         }
 

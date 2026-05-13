@@ -13,9 +13,9 @@ echo collect(app()->getBindings())
 
         return [
             $key => [
-                'path' => LspHelper::relativePath($closureClass->getFileName()),
+                'path'  => LspHelper::relativePath($closureClass->getFileName()),
                 'class' => $closureClass->getName(),
-                'line' => $boundTo->getStartLine(),
+                'line'  => $boundTo->getStartLine(),
             ],
         ];
     })->toJson();

@@ -29,7 +29,7 @@ class RouteParameterCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('routeCompletion', true)) {
+        if (!$this->workspace->config->boolean('routeCompletion', true)) {
             return [];
         }
 
@@ -91,17 +91,17 @@ class RouteParameterCompletionProvider implements CompletionProvider
 
         $route = $routes->get($routeName);
 
-        if (! is_array($route)) {
+        if (!is_array($route)) {
             return [];
         }
 
         return collect($route['parameters'] ?? [])
             ->filter(fn (mixed $parameter): bool => is_string($parameter) && $parameter !== '')
             ->map(fn (string $parameter): array => [
-                'label' => $parameter,
-                'kind' => 6,
+                'label'    => $parameter,
+                'kind'     => 6,
                 'textEdit' => [
-                    'range' => $argument->replacementRange(),
+                    'range'   => $argument->replacementRange(),
                     'newText' => $parameter,
                 ],
             ])

@@ -107,7 +107,7 @@ class EloquentCompletionProvider implements CompletionProvider
     {
         $item = $document->autocomplete($position);
 
-        if ($item === [] || ! $this->mightComplete($item)) {
+        if ($item === [] || !$this->mightComplete($item)) {
             return [];
         }
 
@@ -125,7 +125,7 @@ class EloquentCompletionProvider implements CompletionProvider
 
         $model = $models->get($class);
 
-        if (! is_array($model)) {
+        if (!is_array($model)) {
             return [];
         }
 
@@ -172,13 +172,13 @@ class EloquentCompletionProvider implements CompletionProvider
                 return [];
             }
 
-            if (! $this->isCurrentArgumentArray($item) || $this->isFillingInArrayKey($item)) {
+            if (!$this->isCurrentArgumentArray($item) || $this->isFillingInArrayKey($item)) {
                 return $this->completionItems($this->relationNames($model, $item), $document, $position, 12);
             }
 
             $relation = $this->relationForCurrentArrayValue($item, $model);
 
-            if (! is_array($relation)) {
+            if (!is_array($relation)) {
                 return [];
             }
 
@@ -228,24 +228,24 @@ class EloquentCompletionProvider implements CompletionProvider
             return is_string($class) && $models->has($class) ? $class : null;
         }
 
-        if (! in_array($method, $this->methods(), true)) {
+        if (!in_array($method, $this->methods(), true)) {
             return null;
         }
 
         foreach ($this->contexts($item) as $context) {
             $class = $this->className($context);
 
-            if (! is_string($class) || $class === 'Illuminate\\Database\\Eloquent\\Builder') {
+            if (!is_string($class) || $class === 'Illuminate\\Database\\Eloquent\\Builder') {
                 continue;
             }
 
-            if (! $models->has($class)) {
+            if (!$models->has($class)) {
                 return null;
             }
 
             $contextMethod = $this->methodName($context);
 
-            if ($contextMethod === null || ! in_array($contextMethod, $this->relationMethods, true)) {
+            if ($contextMethod === null || !in_array($contextMethod, $this->relationMethods, true)) {
                 return $class;
             }
 
@@ -313,7 +313,7 @@ class EloquentCompletionProvider implements CompletionProvider
     {
         return collect($model['attributes'] ?? [])
             ->filter(fn (mixed $attribute): bool => is_array($attribute))
-            ->filter(fn (array $attribute): bool => ! in_array((string) ($attribute['cast'] ?? ''), ['accessor', 'attribute'], true))
+            ->filter(fn (array $attribute): bool => !in_array((string) ($attribute['cast'] ?? ''), ['accessor', 'attribute'], true))
             ->pluck('name')
             ->filter(fn (mixed $name): bool => is_string($name) && $name !== '')
             ->values()
@@ -334,7 +334,7 @@ class EloquentCompletionProvider implements CompletionProvider
         return collect($model['attributes'] ?? [])
             ->filter(fn (mixed $attribute): bool => is_array($attribute) && ($attribute['fillable'] ?? false) === true)
             ->pluck('name')
-            ->filter(fn (mixed $name): bool => is_string($name) && $name !== '' && ! in_array($name, $existing, true))
+            ->filter(fn (mixed $name): bool => is_string($name) && $name !== '' && !in_array($name, $existing, true))
             ->values()
             ->all();
     }
@@ -352,7 +352,7 @@ class EloquentCompletionProvider implements CompletionProvider
 
         return collect($model['relations'] ?? [])
             ->pluck('name')
-            ->filter(fn (mixed $name): bool => is_string($name) && $name !== '' && ! in_array($name, $existing, true))
+            ->filter(fn (mixed $name): bool => is_string($name) && $name !== '' && !in_array($name, $existing, true))
             ->values()
             ->all();
     }
@@ -406,14 +406,14 @@ class EloquentCompletionProvider implements CompletionProvider
     {
         $argument = $this->currentArgument($item);
 
-        if (! is_array($argument) || ($argument['type'] ?? null) !== 'array') {
+        if (!is_array($argument) || ($argument['type'] ?? null) !== 'array') {
             return null;
         }
 
         $children = array_reverse(array_values(is_array($argument['children'] ?? null) ? $argument['children'] : []));
 
         foreach ($children as $child) {
-            if (! is_array($child)) {
+            if (!is_array($child)) {
                 continue;
             }
 
@@ -467,7 +467,7 @@ class EloquentCompletionProvider implements CompletionProvider
 
         $argument = $this->arguments($item)[$index] ?? null;
 
-        if (! is_array($argument)) {
+        if (!is_array($argument)) {
             return null;
         }
 
@@ -528,7 +528,7 @@ class EloquentCompletionProvider implements CompletionProvider
     {
         $argument = $this->currentArgument($item);
 
-        if (! is_array($argument) || ($argument['type'] ?? null) !== 'array') {
+        if (!is_array($argument) || ($argument['type'] ?? null) !== 'array') {
             return [];
         }
 
@@ -621,10 +621,10 @@ class EloquentCompletionProvider implements CompletionProvider
         return collect($labels)
             ->unique()
             ->map(fn (string $label): array => [
-                'label' => $label,
-                'kind' => $kind,
+                'label'    => $label,
+                'kind'     => $kind,
                 'textEdit' => [
-                    'range' => $this->replacementRange($document, $position),
+                    'range'   => $this->replacementRange($document, $position),
                     'newText' => $label,
                 ],
             ])
@@ -650,11 +650,11 @@ class EloquentCompletionProvider implements CompletionProvider
 
         return [
             'start' => [
-                'line' => $line,
+                'line'      => $line,
                 'character' => max(0, $start),
             ],
             'end' => [
-                'line' => $line,
+                'line'      => $line,
                 'character' => $character,
             ],
         ];

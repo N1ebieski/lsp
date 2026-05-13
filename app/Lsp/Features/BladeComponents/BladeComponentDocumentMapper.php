@@ -46,13 +46,13 @@ class BladeComponentDocumentMapper
     public function hover(Document $document, array $position): ?array
     {
         foreach ($this->matches($document) as $match) {
-            if (! Position::inRange($match['range'], $position)) {
+            if (!Position::inRange($match['range'], $position)) {
                 continue;
             }
 
             $component = $this->component($match['name']);
 
-            if (! is_array($component)) {
+            if (!is_array($component)) {
                 continue;
             }
 
@@ -65,12 +65,12 @@ class BladeComponentDocumentMapper
                 $lines[] = "```blade\n{$component['props']}\n```";
             } elseif (is_iterable($component['props'] ?? null)) {
                 foreach ($component['props'] as $prop) {
-                    if (! is_array($prop)) {
+                    if (!is_array($prop)) {
                         continue;
                     }
 
                     $default = isset($prop['default']) && $prop['default'] !== null ? " = {$prop['default']}" : '';
-                    $lines[] = '`'.($prop['type'] ?? 'mixed').'` `'.($prop['name'] ?? '')."`{$default}";
+                    $lines[] = '`' . ($prop['type'] ?? 'mixed') . '` `' . ($prop['name'] ?? '') . "`{$default}";
                 }
             }
 
@@ -131,7 +131,7 @@ class BladeComponentDocumentMapper
         $patterns = ['/<\/?x-([^\s>]+)/'];
 
         if ($prefixPattern !== '') {
-            $patterns[] = '/<\/?(('.$prefixPattern.')\:[^\s>]+)/';
+            $patterns[] = '/<\/?((' . $prefixPattern . ')\:[^\s>]+)/';
         }
 
         foreach (explode("\n", $document->content) as $lineNumber => $line) {
@@ -175,7 +175,7 @@ class BladeComponentDocumentMapper
         $lineNumber = $position['line'] ?? null;
         $character = $position['character'] ?? null;
 
-        if (! is_int($lineNumber) || ! is_int($character)) {
+        if (!is_int($lineNumber) || !is_int($character)) {
             return null;
         }
 
@@ -207,7 +207,7 @@ class BladeComponentDocumentMapper
      */
     protected function completionLabel(string $key): string
     {
-        if (str_contains($key, '::') || ! str_contains($key, ':')) {
+        if (str_contains($key, '::') || !str_contains($key, ':')) {
             return "x-{$key}";
         }
 
@@ -221,7 +221,7 @@ class BladeComponentDocumentMapper
      */
     protected function path(?array $component): ?string
     {
-        if ($component === null || ! is_iterable($component['paths'] ?? null)) {
+        if ($component === null || !is_iterable($component['paths'] ?? null)) {
             return null;
         }
 

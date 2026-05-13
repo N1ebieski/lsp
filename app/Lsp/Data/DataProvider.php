@@ -49,7 +49,7 @@ abstract class DataProvider
      */
     public function get(): mixed
     {
-        if (! $this->loaded) {
+        if (!$this->loaded) {
             $this->load();
         }
 
@@ -86,7 +86,7 @@ abstract class DataProvider
 
         $result = $this->php->json($template);
 
-        if (! is_array($result)) {
+        if (!is_array($result)) {
             return;
         }
 

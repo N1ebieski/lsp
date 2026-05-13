@@ -1,34 +1,43 @@
 <?php
 
-$livewire = new class {
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\File;
+use Livewire\LivewireManager;
+use Symfony\Component\Finder\Finder;
+
+$livewire = new class
+{
     protected $namespaces;
+
     protected $paths;
-    protected $extensions = [".blade.php", ".php", ".js", ".global.css", ".css", ".test.php"];
+
+    protected $extensions = ['.blade.php', '.php', '.js', '.global.css', '.css', '.test.php'];
 
     public function __construct()
     {
         $this->namespaces = collect(
-            config("livewire.component_namespaces", [])
+            config('livewire.component_namespaces', [])
         )->map(LspHelper::relativePath(...));
 
         $this->paths = collect($this->namespaces->values())
-            ->merge(config("livewire.component_locations", []))
+            ->merge(config('livewire.component_locations', []))
             ->unique()
             ->map(LspHelper::relativePath(...));
     }
 
-    public function parse(\Illuminate\Support\Collection $views)
+    public function parse(Collection $views)
     {
         return $this->isVersionFour()
             ? $this->parseLivewireFour($views)
             : $this->parseLivewireThree($views);
     }
 
-    protected function parseLivewireFour(\Illuminate\Support\Collection $views)
+    protected function parseLivewireFour(Collection $views)
     {
         return $views
             ->map(function (array $view) {
-                if (!$this->pathExists($view["path"])) {
+                if (!$this->pathExists($view['path'])) {
                     return $view;
                 }
 
@@ -43,7 +52,7 @@ $livewire = new class {
                 }
 
                 return array_merge($view, [
-                    "key" => $key,
+                    'key'      => $key,
                     'livewire' => [
                         'props' => $this->getProps($component),
                         'files' => $files,
@@ -55,7 +64,7 @@ $livewire = new class {
             ->values();
     }
 
-    protected function parseLivewireThree(\Illuminate\Support\Collection $views)
+    protected function parseLivewireThree(Collection $views)
     {
         return $views->map(function (array $view) {
             if (!str($view['key'])->startsWith('livewire.')) {
@@ -79,8 +88,8 @@ $livewire = new class {
 
     protected function isVersionFour(): bool
     {
-        return property_exists(\Livewire\LivewireManager::class, "v4") &&
-            \Livewire\LivewireManager::$v4;
+        return property_exists(LivewireManager::class, 'v4') &&
+            LivewireManager::$v4;
     }
 
     protected function pathExists(string $path): bool
@@ -91,8 +100,8 @@ $livewire = new class {
     protected function getComponent(string $key)
     {
         try {
-            return app("livewire")->new($key);
-        } catch (\Throwable $e) {
+            return app('livewire')->new($key);
+        } catch (Throwable $e) {
             return null;
         }
     }
@@ -100,66 +109,67 @@ $livewire = new class {
     protected function getProps($component): array
     {
         return array_map(function ($prop) use ($component) {
-            $reflection = new \ReflectionProperty($component, $prop);
+            $reflection = new ReflectionProperty($component, $prop);
 
             return [
-                'name' => $prop,
-                'type' => (string) $reflection->getType() ?: 'mixed',
+                'name'            => $prop,
+                'type'            => (string) $reflection->getType() ?: 'mixed',
                 'hasDefaultValue' => $reflection->hasDefaultValue(),
-                'defaultValue' => $this->formatDefaultValue($reflection->getDefaultValue()),
+                'defaultValue'    => $this->formatDefaultValue($reflection->getDefaultValue()),
             ];
         }, array_keys($component->all()));
     }
 
     protected function formatDefaultValue(mixed $value)
     {
-        return is_string($value) ? "'{$value}'": $value;
+        return is_string($value) ? "'{$value}'" : $value;
     }
 
     protected function key(array $view): string
     {
-        return str($view["key"])
-            ->replace("⚡", "")
-            ->when($this->isMfc($view), fn ($key) => $key->beforeLast("."))
+        return str($view['key'])
+            ->replace('⚡', '')
+            ->when($this->isMfc($view), fn ($key) => $key->beforeLast('.'))
             ->value();
     }
 
     protected function files(array $view): array
     {
-        if (! $this->isMfc($view)) {
+        if (!$this->isMfc($view)) {
             return [$view['path']];
         }
 
-        $filePathWithoutExtension = str($view["path"])->replace($this->extensions, "");
+        $filePathWithoutExtension = str($view['path'])->replace($this->extensions, '');
 
         return collect($this->extensions)
             ->map(fn (string $extension) => $filePathWithoutExtension->append($extension))
-            ->filter(fn (string $path) => \Illuminate\Support\Facades\File::exists($path))
+            ->filter(fn (string $path) => File::exists($path))
             ->all();
     }
 
     protected function isMfc(array $view): bool
     {
-        $directory = str($view["path"])
-            ->replace("⚡", "")
+        $directory = str($view['path'])
+            ->replace('⚡', '')
             ->dirname()
             ->afterLast(DIRECTORY_SEPARATOR);
 
-        $file = str($view["path"])
-            ->replace("⚡", "")
+        $file = str($view['path'])
+            ->replace('⚡', '')
             ->basename()
-            ->replace($this->extensions, "");
+            ->replace($this->extensions, '');
 
-        $class = str($view["path"])
+        $class = str($view['path'])
             ->dirname()
-            ->append(DIRECTORY_SEPARATOR . $file . ".php");
+            ->append(DIRECTORY_SEPARATOR . $file . '.php');
 
         return $directory->is($file)
-            && \Illuminate\Support\Facades\File::exists($class);
+            && File::exists($class);
     }
 };
 
-$blade = new class ($livewire) {
+$blade = new class($livewire)
+{
     public function __construct(protected $livewire)
     {
         //
@@ -167,17 +177,17 @@ $blade = new class ($livewire) {
 
     public function getAllViews()
     {
-        $finder = app("view")->getFinder();
+        $finder = app('view')->getFinder();
 
-        $paths = collect($finder->getPaths())->flatMap(fn($path) => $this->findViews($path));
+        $paths = collect($finder->getPaths())->flatMap(fn ($path) => $this->findViews($path));
 
         $hints = collect($finder->getHints())
             ->filter(
-                fn ($_, $key) => ! (strlen($key) === 32 && ctype_xdigit($key))
+                fn ($_, $key) => !(strlen($key) === 32 && ctype_xdigit($key))
             )->flatMap(
-                fn($paths, $key) => collect($paths)->flatMap(
-                    fn($path) => collect($this->findViews($path))->map(
-                        fn($value) => array_merge($value, ["key" => "{$key}::{$value["key"]}"])
+                fn ($paths, $key) => collect($paths)->flatMap(
+                    fn ($path) => collect($this->findViews($path))->map(
+                        fn ($value) => array_merge($value, ['key' => "{$key}::{$value['key']}"])
                     )
                 )
             );
@@ -185,18 +195,18 @@ $blade = new class ($livewire) {
         [$local, $vendor] = $paths
             ->merge($hints)
             ->values()
-            ->partition(fn($v) => !$v["isVendor"]);
+            ->partition(fn ($v) => !$v['isVendor']);
 
         return $local
-            ->sortBy("key", SORT_NATURAL)
-            ->merge($vendor->sortBy("key", SORT_NATURAL))
+            ->sortBy('key', SORT_NATURAL)
+            ->merge($vendor->sortBy('key', SORT_NATURAL))
             ->pipe($this->livewire->parse(...));
     }
 
     public function getAllComponents()
     {
-        $namespaced = \Illuminate\Support\Facades\Blade::getClassComponentNamespaces();
-        $autoloaded = require base_path("vendor/composer/autoload_psr4.php");
+        $namespaced = Blade::getClassComponentNamespaces();
+        $autoloaded = require base_path('vendor/composer/autoload_psr4.php');
         $components = [];
 
         foreach ($namespaced as $key => $ns) {
@@ -221,24 +231,24 @@ $blade = new class ($livewire) {
                 continue;
             }
 
-            $files = \Symfony\Component\Finder\Finder::create()
+            $files = Finder::create()
                 ->files()
-                ->name("*.php")
+                ->name('*.php')
                 ->in($path);
 
             foreach ($files as $file) {
                 $realPath = $file->getRealPath();
 
                 $components[] = [
-                    "path" => LspHelper::relativePath($realPath),
-                    "isVendor" => str_contains($realPath, base_path("vendor")),
-                    "key" =>  str($realPath)
-                        ->replace(realpath($path), "")
-                        ->replace(".php", "")
+                    'path'     => LspHelper::relativePath($realPath),
+                    'isVendor' => str_contains($realPath, base_path('vendor')),
+                    'key'      => str($realPath)
+                        ->replace(realpath($path), '')
+                        ->replace('.php', '')
                         ->ltrim(DIRECTORY_SEPARATOR)
-                        ->replace(DIRECTORY_SEPARATOR, ".")
+                        ->replace(DIRECTORY_SEPARATOR, '.')
                         ->kebab()
-                        ->prepend($key . "::"),
+                        ->prepend($key . '::'),
                 ];
             }
         }
@@ -254,23 +264,23 @@ $blade = new class ($livewire) {
             return $paths;
         }
 
-        $finder = app("view")->getFinder();
-        $extensions = array_map(fn($extension) => ".{$extension}", $finder->getExtensions());
+        $finder = app('view')->getFinder();
+        $extensions = array_map(fn ($extension) => ".{$extension}", $finder->getExtensions());
 
-        $files = \Symfony\Component\Finder\Finder::create()
+        $files = Finder::create()
             ->files()
             ->name(array_map(fn ($ext) => "*{$ext}", $extensions))
             ->in($path);
 
         foreach ($files as $file) {
             $paths[] = [
-                "path" => LspHelper::relativePath($file->getRealPath()),
-                "isVendor" => str_contains($file->getRealPath(), base_path("vendor")),
-                "key" => str($file->getRealPath())
-                    ->replace(realpath($path), "")
-                    ->replace($extensions, "")
+                'path'     => LspHelper::relativePath($file->getRealPath()),
+                'isVendor' => str_contains($file->getRealPath(), base_path('vendor')),
+                'key'      => str($file->getRealPath())
+                    ->replace(realpath($path), '')
+                    ->replace($extensions, '')
                     ->ltrim(DIRECTORY_SEPARATOR)
-                    ->replace(DIRECTORY_SEPARATOR, "."),
+                    ->replace(DIRECTORY_SEPARATOR, '.'),
             ];
         }
 

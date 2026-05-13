@@ -25,7 +25,7 @@ class BladeComponentHoverProvider implements HoverProvider
      */
     public function get(Document $document, array $position): ?array
     {
-        if (! $this->workspace->config->boolean('bladeComponentHover', true)) {
+        if (!$this->workspace->config->boolean('bladeComponentHover', true)) {
             return null;
         }
 

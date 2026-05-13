@@ -24,7 +24,7 @@ class ControllerActionLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('controllerActionLink', true)) {
+        if (!$this->workspace->config->boolean('controllerActionLink', true)) {
             return [];
         }
 

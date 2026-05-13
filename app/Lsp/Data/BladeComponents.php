@@ -11,7 +11,7 @@ class BladeComponents extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/blade-components.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/blade-components.php') ?: '';
     }
 
     /**
@@ -47,7 +47,7 @@ class BladeComponents extends DataProvider
     {
         return [
             'components' => [],
-            'prefixes' => [],
+            'prefixes'   => [],
         ];
     }
 }

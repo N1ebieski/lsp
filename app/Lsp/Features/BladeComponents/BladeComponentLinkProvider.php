@@ -24,7 +24,7 @@ class BladeComponentLinkProvider implements LinkProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('bladeComponentLink', true)) {
+        if (!$this->workspace->config->boolean('bladeComponentLink', true)) {
             return [];
         }
 

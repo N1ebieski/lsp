@@ -11,7 +11,7 @@ class Models extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/models.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/models.php') ?: '';
     }
 
     /**

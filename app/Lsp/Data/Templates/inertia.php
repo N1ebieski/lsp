@@ -12,7 +12,7 @@ $pagePaths = config(
 
 echo json_encode([
     'page_extensions' => $pageExtensions,
-    'page_paths' => collect($pagePaths)->flatMap(function($path) {
+    'page_paths'      => collect($pagePaths)->flatMap(function ($path) {
         $relativePath = LspHelper::relativePath($path);
 
         return [$relativePath, mb_strtolower($relativePath)];

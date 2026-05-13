@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function getLoggingPath(): string
     {
-        if (! Phar::running()) {
+        if (!Phar::running()) {
             return storage_path('logs/lsp.log');
         }
 

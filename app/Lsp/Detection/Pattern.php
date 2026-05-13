@@ -91,7 +91,7 @@ class Pattern
             return false;
         }
 
-        if (! $this->matchesMethod($item)) {
+        if (!$this->matchesMethod($item)) {
             return false;
         }
 

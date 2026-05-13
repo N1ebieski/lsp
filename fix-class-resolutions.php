@@ -188,6 +188,7 @@ foreach ($files as $file) {
 
     if (!file_exists($path)) {
         $results[] = 'x';
+
         continue;
     }
 

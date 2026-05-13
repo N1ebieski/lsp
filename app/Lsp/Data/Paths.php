@@ -13,7 +13,7 @@ class Paths extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/paths.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/paths.php') ?: '';
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Process;
 use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;

@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\LazyCollection;
+
 $translator = new class
 {
     public $paths = [];
@@ -21,27 +26,27 @@ $translator = new class
         $final = [];
 
         foreach ($this->retrieve() as $value) {
-            if ($value instanceof \Illuminate\Support\LazyCollection) {
+            if ($value instanceof LazyCollection) {
                 foreach ($value as $val) {
-                    $dotKey = $val["k"];
+                    $dotKey = $val['k'];
                     $final[$dotKey] ??= [];
 
-                    if (!in_array($val["la"], $this->languages)) {
-                      $this->languages[] = $val["la"];
+                    if (!in_array($val['la'], $this->languages)) {
+                        $this->languages[] = $val['la'];
                     }
 
-                    $final[$dotKey][$val["la"]] = $val["vs"];
+                    $final[$dotKey][$val['la']] = $val['vs'];
                 }
             } else {
-                foreach ($value["vs"] as $v) {
-                    $dotKey = "{$value["k"]}.{$v['k']}";
+                foreach ($value['vs'] as $v) {
+                    $dotKey = "{$value['k']}.{$v['k']}";
                     $final[$dotKey] ??= [];
 
-                    if (!in_array($value["la"], $this->languages)) {
-                      $this->languages[] = $value["la"];
+                    if (!in_array($value['la'], $this->languages)) {
+                        $this->languages[] = $value['la'];
                     }
 
-                    $final[$dotKey][$value["la"]] = $v['arr'];
+                    $final[$dotKey][$value['la']] = $v['arr'];
                 }
             }
         }
@@ -51,17 +56,17 @@ $translator = new class
 
     protected function retrieve()
     {
-        $loader = app("translator")->getLoader();
+        $loader = app('translator')->getLoader();
         $namespaces = $loader->namespaces();
 
         $paths = $this->getPaths($loader);
 
         $default = collect($paths)->flatMap(
-            fn($path) => $this->collectFromPath($path)
+            fn ($path) => $this->collectFromPath($path)
         );
 
         $namespaced = collect($namespaces)->flatMap(
-            fn($path, $namespace) => $this->collectFromPath($path, $namespace)
+            fn ($path, $namespace) => $this->collectFromPath($path, $namespace)
         );
 
         return $default->merge($namespaced);
@@ -72,15 +77,16 @@ $translator = new class
         $reflection = new ReflectionClass($loader);
         $property = null;
 
-        if ($reflection->hasProperty("paths")) {
-            $property = $reflection->getProperty("paths");
-        } else if ($reflection->hasProperty("path")) {
-            $property = $reflection->getProperty("path");
+        if ($reflection->hasProperty('paths')) {
+            $property = $reflection->getProperty('paths');
+        } elseif ($reflection->hasProperty('path')) {
+            $property = $reflection->getProperty('path');
         }
 
         if ($property !== null) {
             $property->setAccessible(true);
-            return \Illuminate\Support\Arr::wrap($property->getValue($loader));
+
+            return Arr::wrap($property->getValue($loader));
         }
 
         return [];
@@ -99,8 +105,8 @@ $translator = new class
         }
 
         return array_map(
-            fn($file) => $this->fromFile($file, $path, $namespace),
-            \Illuminate\Support\Facades\File::allFiles($realPath),
+            fn ($file) => $this->fromFile($file, $path, $namespace),
+            File::allFiles($realPath),
         );
     }
 
@@ -119,7 +125,7 @@ $translator = new class
 
         try {
             $json = json_decode($contents, true) ?? [];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [[], []];
         }
 
@@ -129,7 +135,7 @@ $translator = new class
 
         $lines = explode(PHP_EOL, $contents);
         $encoded = array_map(
-            fn($k) => [json_encode($k, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $k],
+            fn ($k) => [json_encode($k, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $k],
             array_keys($json),
         );
         $result = [];
@@ -139,6 +145,7 @@ $translator = new class
             // Pretty likely to be on the line that is the index, go happy path first
             if (strpos($lines[$index + 1] ?? '', $keys[0]) !== false) {
                 $result[$keys[1]] = $index + 2;
+
                 continue;
             }
 
@@ -202,7 +209,7 @@ $translator = new class
 
                 $depthKeys[$arrayDepth] = trim($token[1], '"\'');
 
-                \Illuminate\Support\Arr::set($found, implode('.', $depthKeys), $token[2]);
+                Arr::set($found, implode('.', $depthKeys), $token[2]);
             }
 
             if (!$inArrayKey && $token[0] === T_CONSTANT_ENCAPSED_STRING) {
@@ -210,18 +217,18 @@ $translator = new class
             }
         }
 
-        return \Illuminate\Support\Arr::dot($found);
+        return Arr::dot($found);
     }
 
     protected function getDotted($key, $lang)
     {
         try {
-            return \Illuminate\Support\Arr::dot(
-                \Illuminate\Support\Arr::wrap(
+            return Arr::dot(
+                Arr::wrap(
                     __($key, [], $lang),
                 ),
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Most likely, in this case, the lang file doesn't return an array
             return [];
         }
@@ -302,9 +309,9 @@ $translator = new class
 
         $relativePath = $this->getPathIndex($file);
 
-        $lines = \Illuminate\Support\Facades\File::lines($file);
+        $lines = File::lines($file);
 
-        return \Illuminate\Support\LazyCollection::make(function () use ($file, $lang, $relativePath, $lines) {
+        return LazyCollection::make(function () use ($file, $lang, $relativePath, $lines) {
             [$json, $lines] = $this->linesFromJsonFile($file);
 
             foreach ($json as $key => $value) {
@@ -313,9 +320,9 @@ $translator = new class
                 }
 
                 yield [
-                    "k" => $key,
-                    "la" => $lang,
-                    "vs" => [
+                    'k'  => $key,
+                    'la' => $lang,
+                    'vs' => [
                         $this->getValueIndex($value),
                         $relativePath,
                         $lines[$key] ?? null,
@@ -329,12 +336,12 @@ $translator = new class
     protected function fromPhpFile($file, $path, $namespace)
     {
         $lang = str($file)
-            ->after($path.DIRECTORY_SEPARATOR)
+            ->after($path . DIRECTORY_SEPARATOR)
             ->before(DIRECTORY_SEPARATOR)
             ->value();
 
         $key = str($file)
-            ->after($path.DIRECTORY_SEPARATOR)
+            ->after($path . DIRECTORY_SEPARATOR)
             ->after(DIRECTORY_SEPARATOR)
             ->replaceLast('.php', '')
             ->value();
@@ -347,16 +354,16 @@ $translator = new class
         $lines = $this->linesFromPhpFile($file);
 
         return [
-            "k" => $key,
-            "la" => $lang,
-            "vs" => \Illuminate\Support\LazyCollection::make(function () use ($key, $lang, $relativePath, $lines) {
+            'k'  => $key,
+            'la' => $lang,
+            'vs' => LazyCollection::make(function () use ($key, $lang, $relativePath, $lines) {
                 foreach ($this->getDotted($key, [], $lang) as $key => $value) {
                     if (!array_key_exists($key, $lines) || is_array($value)) {
                         continue;
                     }
 
                     yield [
-                        'k' => $key,
+                        'k'   => $key,
                         'arr' => [
                             $this->getValueIndex($value),
                             $relativePath,
@@ -371,11 +378,11 @@ $translator = new class
 };
 
 echo json_encode([
-    'default' => \Illuminate\Support\Facades\App::currentLocale(),
+    'default'      => App::currentLocale(),
     'translations' => $translator->all(),
-    'languages' => $translator->languages,
-    'paths' => array_keys($translator->paths),
-    'values' => array_keys($translator->values),
-    'params' => array_map(fn($p) => json_decode($p, true), array_keys($translator->paramResults)),
-    'to_watch' => $translator->directoriesToWatch,
+    'languages'    => $translator->languages,
+    'paths'        => array_keys($translator->paths),
+    'values'       => array_keys($translator->values),
+    'params'       => array_map(fn ($p) => json_decode($p, true), array_keys($translator->paramResults)),
+    'to_watch'     => $translator->directoriesToWatch,
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

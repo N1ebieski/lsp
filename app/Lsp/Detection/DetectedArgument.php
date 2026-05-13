@@ -147,11 +147,11 @@ class DetectedArgument
     {
         return [
             'start' => [
-                'line' => $value['start']['line'],
+                'line'      => $value['start']['line'],
                 'character' => $value['start']['column'] + 1,
             ],
             'end' => [
-                'line' => $value['end']['line'],
+                'line'      => $value['end']['line'],
                 'character' => $value['end']['column'] + 1,
             ],
         ];

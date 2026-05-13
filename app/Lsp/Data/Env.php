@@ -57,13 +57,13 @@ class Env extends DataProvider
         $this->loaded = true;
         $path = $this->workspace->path('.env');
 
-        if (! is_file($path)) {
+        if (!is_file($path)) {
             return $this->data = collect();
         }
 
         return $this->data = collect(explode("\n", (string) file_get_contents($path)))
             ->map(fn (string $line, int $index): array => [
-                'line' => trim($line),
+                'line'       => trim($line),
                 'lineNumber' => $index + 1,
             ])
             ->reject(fn (array $item): bool => $item['line'] === '' || str_starts_with($item['line'], '#'))
@@ -71,7 +71,7 @@ class Env extends DataProvider
                 [$key, $value] = array_pad(explode('=', $item['line'], 2), 2, '');
 
                 return [trim($key) => [
-                    'value' => trim($value),
+                    'value'      => trim($value),
                     'lineNumber' => $item['lineNumber'],
                 ]];
             });

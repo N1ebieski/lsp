@@ -25,7 +25,7 @@ class ControllerActionCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('controllerActionCompletion', true)) {
+        if (!$this->workspace->config->boolean('controllerActionCompletion', true)) {
             return [];
         }
 

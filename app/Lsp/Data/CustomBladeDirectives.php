@@ -11,7 +11,7 @@ class CustomBladeDirectives extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/blade-directives.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/blade-directives.php') ?: '';
     }
 
     /**

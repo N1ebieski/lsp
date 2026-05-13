@@ -17,7 +17,7 @@ class LaravelData implements Method
      */
     public function handle(JsonRpcRequest $request, Workspace $workspace): JsonRpcResponse
     {
-        if (! $name = $request->get('name')) {
+        if (!$name = $request->get('name')) {
             return JsonRpcResponse::error(
                 $request->id(),
                 -32602,
@@ -25,7 +25,7 @@ class LaravelData implements Method
             );
         }
 
-        if (! $provider = $workspace->data->get($name)) {
+        if (!$provider = $workspace->data->get($name)) {
             return JsonRpcResponse::error(
                 $request->id(),
                 -32602,

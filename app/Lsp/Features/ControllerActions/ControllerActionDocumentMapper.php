@@ -45,7 +45,7 @@ class ControllerActionDocumentMapper extends DocumentMapper
     {
         $route = $this->find($argument);
 
-        if ($route === null || ! is_string($route['filename'] ?? null)) {
+        if ($route === null || !is_string($route['filename'] ?? null)) {
             return [];
         }
 
@@ -78,7 +78,7 @@ class ControllerActionDocumentMapper extends DocumentMapper
     {
         $value = $argument->stringValue();
 
-        if ($value === null || ! str_contains($value, '@') || $this->find($argument) !== null) {
+        if ($value === null || !str_contains($value, '@') || $this->find($argument) !== null) {
             return [];
         }
 

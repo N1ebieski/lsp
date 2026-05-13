@@ -7,6 +7,7 @@ namespace App\Lsp\Data;
 use App\Lsp\Workspace;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class Assets extends DataProvider
 {
@@ -59,14 +60,14 @@ class Assets extends DataProvider
 
         $this->loaded = true;
 
-        if (! is_dir($public)) {
+        if (!is_dir($public)) {
             return $this->data = collect();
         }
 
         return $this->data = collect(Finder::create()->files()->in($public)->depth('<= 10'))
-            ->reject(fn (\Symfony\Component\Finder\SplFileInfo $file): bool => $file->getExtension() === 'php')
-            ->map(fn (\Symfony\Component\Finder\SplFileInfo $file): array => [
-                'path' => str_replace('\\', '/', ltrim(str_replace($public, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR)),
+            ->reject(fn (SplFileInfo $file): bool => $file->getExtension() === 'php')
+            ->map(fn (SplFileInfo $file): array => [
+                'path'     => str_replace('\\', '/', ltrim(str_replace($public, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR)),
                 'fullPath' => $file->getRealPath() ?: $file->getPathname(),
             ])
             ->values();

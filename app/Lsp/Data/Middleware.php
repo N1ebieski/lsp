@@ -13,7 +13,7 @@ class Middleware extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/middleware.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/middleware.php') ?: '';
     }
 
     /**

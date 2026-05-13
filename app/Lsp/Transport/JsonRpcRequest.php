@@ -30,17 +30,17 @@ class JsonRpcRequest
      */
     public static function from(array $jsonRequest): static
     {
-        if (! isset($jsonRequest['jsonrpc']) || $jsonRequest['jsonrpc'] !== '2.0') {
+        if (!isset($jsonRequest['jsonrpc']) || $jsonRequest['jsonrpc'] !== '2.0') {
             throw new \InvalidArgumentException('Invalid Request: The [jsonrpc] member must be exactly [2.0].');
         }
 
-        if (! isset($jsonRequest['method']) || ! is_string($jsonRequest['method'])) {
+        if (!isset($jsonRequest['method']) || !is_string($jsonRequest['method'])) {
             throw new \InvalidArgumentException('Invalid Request: The [method] member is required and must be a string.');
         }
 
-        $notification = ! array_key_exists('id', $jsonRequest);
+        $notification = !array_key_exists('id', $jsonRequest);
 
-        if (! $notification && ! is_int($jsonRequest['id']) && ! is_string($jsonRequest['id'])) {
+        if (!$notification && !is_int($jsonRequest['id']) && !is_string($jsonRequest['id'])) {
             throw new \InvalidArgumentException('Invalid Request: The [id] member must be a string or number.');
         }
 
@@ -84,7 +84,7 @@ class JsonRpcRequest
      */
     public function all($keys = null): array
     {
-        if (! $keys) {
+        if (!$keys) {
             return $this->params;
         }
 

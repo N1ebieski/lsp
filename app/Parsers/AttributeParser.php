@@ -28,6 +28,6 @@ class AttributeParser extends AbstractParser
 
     public function initNewContext(): ?AbstractContext
     {
-        return new ObjectValue();
+        return new ObjectValue;
     }
 }

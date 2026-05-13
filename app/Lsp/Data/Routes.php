@@ -13,7 +13,7 @@ class Routes extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/routes.php');
+        return file_get_contents(__DIR__ . '/Templates/routes.php');
     }
 
     /**

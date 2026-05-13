@@ -1,13 +1,22 @@
 <?php
 
-$components = new class {
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Str;
+use Illuminate\Support\Stringable;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
+use Symfony\Component\Finder\Finder;
+
+$components = new class
+{
     protected $autoloaded = [];
 
     protected $prefixes = [];
 
     public function __construct()
     {
-        $this->autoloaded = require base_path("vendor/composer/autoload_psr4.php");
+        $this->autoloaded = require base_path('vendor/composer/autoload_psr4.php');
     }
 
     public function all()
@@ -20,15 +29,15 @@ $components = new class {
             $this->getAnonymous(),
             $this->getAliases(),
             $this->getVendorComponents(),
-        ))->groupBy('key')->pipe($this->setProps(...))->map(fn($items) => [
+        ))->groupBy('key')->pipe($this->setProps(...))->map(fn ($items) => [
             'isVendor' => $items->first()['isVendor'],
-            'paths' => $items->pluck('path')->unique()->values(),
-            'props' => $this->formatProps($items),
+            'paths'    => $items->pluck('path')->unique()->values(),
+            'props'    => $this->formatProps($items),
         ]);
 
         return [
             'components' => $components,
-            'prefixes' => $this->prefixes,
+            'prefixes'   => $this->prefixes,
         ];
     }
 
@@ -40,7 +49,7 @@ $components = new class {
             return $codeBlock;
         }
 
-        return $props->values()->filter()->flatMap(fn($i) => $i);
+        return $props->values()->filter()->flatMap(fn ($i) => $i);
     }
 
     protected function getStandardViews()
@@ -56,9 +65,9 @@ $components = new class {
             return [];
         }
 
-        $files = \Symfony\Component\Finder\Finder::create()
+        $files = Finder::create()
             ->files()
-            ->name("*." . $extension)
+            ->name('*.' . $extension)
             ->in($path);
         $components = [];
         $pathRealPath = realpath($path);
@@ -71,12 +80,12 @@ $components = new class {
                 ->ltrim('/\\')
                 ->replace('.' . $extension, '')
                 ->replace(['/', '\\'], '.')
-                ->pipe(fn($str) => $this->handleIndexComponents($str));
+                ->pipe(fn ($str) => $this->handleIndexComponents($str));
 
             $components[] = [
-                "path" => LspHelper::relativePath($realPath),
-                "isVendor" => LspHelper::isVendor($realPath),
-                "key" => $keyCallback ? $keyCallback($key) : $key,
+                'path'     => LspHelper::relativePath($realPath),
+                'isVendor' => LspHelper::isVendor($realPath),
+                'key'      => $keyCallback ? $keyCallback($key) : $key,
             ];
         }
 
@@ -88,15 +97,15 @@ $components = new class {
         $path = app_path('View/Components');
 
         $appNamespace = collect($this->autoloaded)
-            ->filter(fn($paths) => in_array(app_path(), $paths))
+            ->filter(fn ($paths) => in_array(app_path(), $paths))
             ->keys()
             ->first() ?? '';
 
         return collect($this->findFiles(
             $path,
             'php',
-            fn($key) => $key->explode('.')
-                ->map(fn($p) => \Illuminate\Support\Str::kebab($p))
+            fn ($key) => $key->explode('.')
+                ->map(fn ($p) => Str::kebab($p))
                 ->implode('.'),
         ))->map(function ($item) use ($appNamespace) {
             $class = str($item['path'])
@@ -110,25 +119,25 @@ $components = new class {
                 return $item;
             }
 
-            $reflection = new \ReflectionClass($class);
+            $reflection = new ReflectionClass($class);
             $parameters = collect($reflection->getConstructor()?->getParameters() ?? [])
-                ->filter(fn($p) => $p->isPromoted())
-                ->flatMap(fn($p) => [$p->getName() => $p->isOptional() ? $this->normalizeDefault($p->getDefaultValue()) : null])
+                ->filter(fn ($p) => $p->isPromoted())
+                ->flatMap(fn ($p) => [$p->getName() => $p->isOptional() ? $this->normalizeDefault($p->getDefaultValue()) : null])
                 ->all();
 
             $props = collect($reflection->getProperties())
-                ->filter(fn($p) => $p->isPublic() && $p->getDeclaringClass()->getName() === $class)
-                ->map(fn($p) => [
-                    'name' => \Illuminate\Support\Str::kebab($p->getName()),
-                    'type' => (string) ($p->getType() ?? 'mixed'),
+                ->filter(fn ($p) => $p->isPublic() && $p->getDeclaringClass()->getName() === $class)
+                ->map(fn ($p) => [
+                    'name'    => Str::kebab($p->getName()),
+                    'type'    => (string) ($p->getType() ?? 'mixed'),
                     'default' => $this->normalizeDefault($p->getDefaultValue() ?? $parameters[$p->getName()] ?? null),
                 ]);
 
-            [$except, $props] = $props->partition(fn($p) => $p['name'] === 'except');
+            [$except, $props] = $props->partition(fn ($p) => $p['name'] === 'except');
 
             if ($except->isNotEmpty()) {
                 $except = $except->first()['default'];
-                $props = $props->reject(fn($p) => in_array($p['name'], $except));
+                $props = $props->reject(fn ($p) => in_array($p['name'], $except));
             }
 
             return [
@@ -142,14 +151,14 @@ $components = new class {
     {
         $components = [];
 
-        foreach (\Illuminate\Support\Facades\Blade::getClassComponentAliases() as $key => $class) {
+        foreach (Blade::getClassComponentAliases() as $key => $class) {
             if (class_exists($class)) {
                 $reflection = new ReflectionClass($class);
 
                 $components[] = [
-                    "path" => LspHelper::relativePath($reflection->getFileName()),
-                    "isVendor" => LspHelper::isVendor($reflection->getFileName()),
-                    "key" =>  $key,
+                    'path'     => LspHelper::relativePath($reflection->getFileName()),
+                    'isVendor' => LspHelper::isVendor($reflection->getFileName()),
+                    'key'      => $key,
                 ];
             }
         }
@@ -161,8 +170,8 @@ $components = new class {
     {
         $components = [];
 
-        foreach (\Illuminate\Support\Facades\Blade::getAnonymousComponentNamespaces() as $key => $dir) {
-            $path = collect([$dir, resource_path('views/' . $dir)])->first(fn($p) => is_dir($p));
+        foreach (Blade::getAnonymousComponentNamespaces() as $key => $dir) {
+            $path = collect([$dir, resource_path('views/' . $dir)])->first(fn ($p) => is_dir($p));
 
             if (!$path) {
                 continue;
@@ -173,7 +182,7 @@ $components = new class {
                 ...$this->findFiles(
                     $path,
                     'blade.php',
-                    fn($k) => $k->kebab()->prepend($key . "::"),
+                    fn ($k) => $k->kebab()->prepend($key . '::'),
                 )
             );
         }
@@ -185,13 +194,13 @@ $components = new class {
     {
         $components = [];
 
-        foreach (\Illuminate\Support\Facades\Blade::getAnonymousComponentPaths() as $item) {
+        foreach (Blade::getAnonymousComponentPaths() as $item) {
             array_push(
                 $components,
                 ...$this->findFiles(
                     $item['path'],
                     'blade.php',
-                    function (\Illuminate\Support\Stringable $key) use ($item) {
+                    function (Stringable $key) use ($item) {
                         $prefix = $item['prefix'] ? $item['prefix'] . '::' : '';
                         $key = $key->kebab();
                         $keys = [];
@@ -219,10 +228,10 @@ $components = new class {
     {
         $components = [];
 
-        /** @var \Illuminate\View\Factory $view */
-        $view = \Illuminate\Support\Facades\App::make('view');
+        /** @var Factory $view */
+        $view = App::make('view');
 
-        /** @var \Illuminate\View\FileViewFinder $finder */
+        /** @var FileViewFinder $finder */
         $finder = $view->getFinder();
 
         /** @var array<string, array<int, string>> $views */
@@ -241,7 +250,7 @@ $components = new class {
                     ...$this->findFiles(
                         $path,
                         'blade.php',
-                        fn (\Illuminate\Support\Stringable $k) => $k->kebab()->prepend($key.'::'),
+                        fn (Stringable $k) => $k->kebab()->prepend($key . '::'),
                     )
                 );
             }
@@ -273,7 +282,7 @@ $components = new class {
 
     protected function getNamespaced()
     {
-        $namespaced = \Illuminate\Support\Facades\Blade::getClassComponentNamespaces();
+        $namespaced = Blade::getClassComponentNamespaces();
         $components = [];
 
         foreach ($namespaced as $key => $classNamespace) {
@@ -288,7 +297,7 @@ $components = new class {
                 ...$this->findFiles(
                     $path,
                     'php',
-                    fn($k) => $k->kebab()->prepend($key . "::"),
+                    fn ($k) => $k->kebab()->prepend($key . '::'),
                 )
             );
         }
@@ -298,10 +307,10 @@ $components = new class {
 
     protected function normalizeDefault($value)
     {
-        if ($value instanceof \UnitEnum) {
-            return $value instanceof \BackedEnum
+        if ($value instanceof UnitEnum) {
+            return $value instanceof BackedEnum
                 ? $value->value
-                : $value::class.'::'.$value->name;
+                : $value::class . '::' . $value->name;
         }
 
         return $value;
@@ -336,7 +345,7 @@ $components = new class {
     {
         try {
             $compiler = app('blade.compiler');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $groups;
         }
 
@@ -350,7 +359,7 @@ $components = new class {
                     return $component;
                 }
 
-                if (! $props = $this->parseProps($compiler, $component)) {
+                if (!$props = $this->parseProps($compiler, $component)) {
                     return $component;
                 }
 
@@ -375,7 +384,7 @@ $components = new class {
             return null;
         }
 
-        return '@props('.$result.')';
+        return '@props(' . $result . ')';
     }
 };
 

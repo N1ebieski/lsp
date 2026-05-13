@@ -13,7 +13,7 @@ class AppBindings extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/app-bindings.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/app-bindings.php') ?: '';
     }
 
     /**

@@ -26,11 +26,11 @@ class TextDocumentCompletion implements Method
 
         $position = $request->get('position', []);
 
-        if (! is_array($position)) {
+        if (!is_array($position)) {
             return JsonRpcResponse::result($request->id(), []);
         }
 
-        if (! is_int($position['line'] ?? null) || ! is_int($position['character'] ?? null)) {
+        if (!is_int($position['line'] ?? null) || !is_int($position['character'] ?? null)) {
             return JsonRpcResponse::result($request->id(), []);
         }
 

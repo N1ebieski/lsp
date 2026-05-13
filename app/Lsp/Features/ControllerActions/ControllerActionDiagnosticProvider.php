@@ -24,7 +24,7 @@ class ControllerActionDiagnosticProvider implements DiagnosticProvider
      */
     public function get(Document $document): array
     {
-        if (! $this->workspace->config->boolean('controllerActionDiagnostics', true)) {
+        if (!$this->workspace->config->boolean('controllerActionDiagnostics', true)) {
             return [];
         }
 

@@ -25,11 +25,11 @@ class LivewireComponentCompletionProvider implements CompletionProvider
      */
     public function get(Document $document, array $position): array
     {
-        if (! $this->workspace->config->boolean('livewireComponentCompletion', true)) {
+        if (!$this->workspace->config->boolean('livewireComponentCompletion', true)) {
             return [];
         }
 
-        if (! str_ends_with($document->uri, '.blade.php')) {
+        if (!str_ends_with($document->uri, '.blade.php')) {
             return [];
         }
 

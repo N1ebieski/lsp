@@ -12,7 +12,7 @@ class StdioTransport implements Transport
     /**
      * The message handler callback.
      *
-     * @var  (Closure(string): void)|null
+     * @var (Closure(string): void)|null
      */
     protected ?Closure $handler = null;
 
@@ -41,7 +41,7 @@ class StdioTransport implements Transport
     {
         stream_set_blocking(STDIN, false);
 
-        while (! feof(STDIN)) {
+        while (!feof(STDIN)) {
             $headers = $this->readHeaders();
 
             if ($headers === null) {

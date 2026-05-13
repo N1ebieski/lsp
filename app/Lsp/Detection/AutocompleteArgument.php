@@ -65,7 +65,7 @@ class AutocompleteArgument
     {
         $argument = $this->item['arguments']['children'][$index]['children'][0] ?? null;
 
-        if (! is_array($argument) || ($argument['type'] ?? null) !== 'string') {
+        if (!is_array($argument) || ($argument['type'] ?? null) !== 'string') {
             return null;
         }
 
@@ -105,7 +105,7 @@ class AutocompleteArgument
     {
         $argument = $this->currentArgument();
 
-        if (! is_array($argument) || ($argument['type'] ?? null) !== 'array') {
+        if (!is_array($argument) || ($argument['type'] ?? null) !== 'array') {
             return [];
         }
 
@@ -155,11 +155,11 @@ class AutocompleteArgument
 
         return [
             'start' => [
-                'line' => $line,
+                'line'      => $line,
                 'character' => max(0, $start),
             ],
             'end' => [
-                'line' => $line,
+                'line'      => $line,
                 'character' => $character,
             ],
         ];

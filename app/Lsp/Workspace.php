@@ -67,7 +67,7 @@ class Workspace
         $target = (string) $this->uri()->joinPath($relativePath);
 
         if ($line !== null) {
-            $target .= '#L'.max(1, $line);
+            $target .= '#L' . max(1, $line);
         }
 
         return $target;
@@ -82,7 +82,7 @@ class Workspace
     public function link(array $range, string $relativePath, ?int $line = null): array
     {
         return [
-            'range' => $range,
+            'range'  => $range,
             'target' => $this->target($relativePath, $line),
         ];
     }

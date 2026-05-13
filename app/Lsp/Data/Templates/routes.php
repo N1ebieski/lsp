@@ -1,24 +1,31 @@
 <?php
 
-$routes = new class {
+use Illuminate\Routing\Route;
+use Illuminate\Routing\UrlGenerator;
+use Illuminate\Support\Facades\Artisan;
+use Laravel\Folio\FolioManager;
+use Symfony\Component\Console\Output\BufferedOutput;
+
+$routes = new class
+{
     public function all()
     {
         return collect(app('router')->getRoutes()->getRoutes())
-            ->map(fn(\Illuminate\Routing\Route $route) => $this->getRoute($route))
+            ->map(fn (Route $route) => $this->getRoute($route))
             ->merge($this->getFolioRoutes());
     }
 
     protected function getFolioRoutes()
     {
         try {
-            $output = new \Symfony\Component\Console\Output\BufferedOutput();
+            $output = new BufferedOutput;
 
-            \Illuminate\Support\Facades\Artisan::call("folio:list", ["--json" => true], $output);
+            Artisan::call('folio:list', ['--json' => true], $output);
 
-            $mountPaths = collect(app(\Laravel\Folio\FolioManager::class)->mountPaths());
+            $mountPaths = collect(app(FolioManager::class)->mountPaths());
 
-            return collect(json_decode($output->fetch(), true))->map(fn($route) => $this->getFolioRoute($route, $mountPaths));
-        } catch (\Exception | \Throwable $e) {
+            return collect(json_decode($output->fetch(), true))->map(fn ($route) => $this->getFolioRoute($route, $mountPaths));
+        } catch (Exception|Throwable $e) {
             return [];
         }
     }
@@ -28,7 +35,7 @@ $routes = new class {
         if ($mountPaths->count() === 1) {
             $mountPath = $mountPaths[0];
         } else {
-            $mountPath = $mountPaths->first(fn($mp) => file_exists($mp->path . DIRECTORY_SEPARATOR . $route['view']));
+            $mountPath = $mountPaths->first(fn ($mp) => file_exists($mp->path . DIRECTORY_SEPARATOR . $route['view']));
         }
 
         $path = $route['view'];
@@ -38,39 +45,39 @@ $routes = new class {
         }
 
         return [
-            'method' => $route['method'],
-            'uri' => $route['uri'],
-            'name' => $route['name'],
-            'action' => null,
+            'method'     => $route['method'],
+            'uri'        => $route['uri'],
+            'name'       => $route['name'],
+            'action'     => null,
             'parameters' => [],
-            'filename' => LspHelper::relativePath($path),
-            'line' => 0,
+            'filename'   => LspHelper::relativePath($path),
+            'line'       => 0,
         ];
     }
 
-    protected function getRoute(\Illuminate\Routing\Route $route)
+    protected function getRoute(Route $route)
     {
         try {
             $reflection = $this->getRouteReflection($route);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $reflection = null;
         }
 
         return [
             'method' => collect($route->methods())
-                ->filter(fn($method) => $method !== 'HEAD')
+                ->filter(fn ($method) => $method !== 'HEAD')
                 ->implode('|'),
-            'uri' => $route->uri(),
-            'name' => $route->getName(),
-            'action' => $route->getActionName(),
+            'uri'        => $route->uri(),
+            'name'       => $route->getName(),
+            'action'     => $route->getActionName(),
             'parameters' => $route->parameterNames(),
-            'filename' => $reflection ? LspHelper::relativePath($reflection->getFileName()) : null,
-            'line' => $reflection ? $reflection->getStartLine() : null,
-            'livewire' => $this->getLivewireView($route),
+            'filename'   => $reflection ? LspHelper::relativePath($reflection->getFileName()) : null,
+            'line'       => $reflection ? $reflection->getStartLine() : null,
+            'livewire'   => $this->getLivewireView($route),
         ];
     }
 
-    protected function getLivewireView(\Illuminate\Routing\Route $route): ?string
+    protected function getLivewireView(Route $route): ?string
     {
         if ($route->getActionName() !== 'Livewire\Features\SupportRouting\LivewirePageController') {
             return null;
@@ -79,23 +86,23 @@ $routes = new class {
         return $route->defaults['_livewire_component'] ?? null;
     }
 
-    protected function getRouteReflection(\Illuminate\Routing\Route $route)
+    protected function getRouteReflection(Route $route)
     {
         if ($route->getActionName() === 'Closure') {
-            return new \ReflectionFunction($route->getAction()['uses']);
+            return new ReflectionFunction($route->getAction()['uses']);
         }
 
         if (!str_contains($route->getActionName(), '@')) {
-            return new \ReflectionClass($route->getActionName());
+            return new ReflectionClass($route->getActionName());
         }
 
         try {
-            return new \ReflectionMethod($route->getControllerClass(), $route->getActionMethod());
-        } catch (\Throwable $e) {
-            $namespace = app(\Illuminate\Routing\UrlGenerator::class)->getRootControllerNamespace()
+            return new ReflectionMethod($route->getControllerClass(), $route->getActionMethod());
+        } catch (Throwable $e) {
+            $namespace = app(UrlGenerator::class)->getRootControllerNamespace()
                 ?? (app()->getNamespace() . 'Http\Controllers');
 
-            return new \ReflectionMethod(
+            return new ReflectionMethod(
                 $namespace . '\\' . ltrim($route->getControllerClass(), '\\'),
                 $route->getActionMethod(),
             );

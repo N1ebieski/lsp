@@ -11,7 +11,7 @@ class DebugInfo extends DataProvider
      */
     public function template(): string
     {
-        return file_get_contents(__DIR__.'/Templates/debug-info.php') ?: '';
+        return file_get_contents(__DIR__ . '/Templates/debug-info.php') ?: '';
     }
 
     /**

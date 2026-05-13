@@ -54,6 +54,6 @@ class Pattern
      */
     protected static function normalize(string $value): string
     {
-        return '/'.ltrim(str_replace('\\', '/', $value), '/');
+        return '/' . ltrim(str_replace('\\', '/', $value), '/');
     }
 }

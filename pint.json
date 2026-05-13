@@ -6,7 +6,7 @@
         "downloads",
         "builds",
         "buildroot",
-        "tests/snippets"
+        "snippets"
     ],
     "rules": {
         "concat_space": {
