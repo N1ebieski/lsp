@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Binary
         run: |
-          php server app:build --build-version=${{ github.ref_name }}
+          php server app:build --build-version=${{ github.ref_name }} -vvv
 
       - name: Download PHP
         run: |
