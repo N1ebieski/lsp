@@ -10,6 +10,12 @@ class Settings
 
     public static $calculatePosition = null;
 
+    public static function reset(): void
+    {
+        self::$capturePosition = false;
+        self::$calculatePosition = null;
+    }
+
     public static function adjustPosition($range): Range
     {
         if (self::$calculatePosition !== null) {

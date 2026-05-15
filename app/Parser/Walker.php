@@ -51,6 +51,8 @@ class Walker
 
     public function walk()
     {
+        Settings::reset();
+
         if (!$this->documentSkipsClosingQuote()) {
             return new Base;
         }

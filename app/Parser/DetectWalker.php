@@ -38,6 +38,7 @@ class DetectWalker
 
     public function walk(?Node $node = null)
     {
+        Settings::reset();
         Settings::$capturePosition = true;
 
         Parse::$debug = $this->debug;
