@@ -96,9 +96,7 @@ class PestHelperWatcher implements FileWatcher
                 ...$this->renderExpectations($expectations),
             ]));
         } catch (Throwable $e) {
-            info('Pest helper generation failed.', [
-                'exception' => $e,
-            ]);
+            report($e);
         }
     }
 

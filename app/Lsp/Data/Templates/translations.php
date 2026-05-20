@@ -84,8 +84,6 @@ $translator = new class
         }
 
         if ($property !== null) {
-            $property->setAccessible(true);
-
             return Arr::wrap($property->getValue($loader));
         }
 

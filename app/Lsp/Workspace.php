@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Lsp;
 
 use App\Lsp\Support\Uri;
-use App\Lsp\Transport\JsonRpcRequest;
 
 class Workspace
 {
@@ -38,7 +37,7 @@ class Workspace
         public readonly WorkspaceConfiguration $config,
     ) {
         $this->documents = new DocumentManager;
-        $this->php = new PhpRunner(Uri::of($baseUri)->path(), $config->phpCommand());
+        $this->php = new PhpRunner($this);
         $this->data = new WorkspaceData($this);
         $this->features = new FeatureRegistry($this);
     }
@@ -110,23 +109,5 @@ class Workspace
             ])
             ->values()
             ->all();
-    }
-
-    /**
-     * Create a workspace from the initialize request.
-     */
-    public static function fromInitializeRequest(JsonRpcRequest $request, Server $server): ?self
-    {
-        $rootUri = $request->get('rootUri');
-
-        if (!is_string($rootUri)) {
-            return null;
-        }
-
-        $config = new WorkspaceConfiguration(
-            $request->collect('initializationOptions')->all()
-        );
-
-        return new self($rootUri, $server, $config);
     }
 }

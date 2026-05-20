@@ -7,13 +7,17 @@ namespace App\Lsp;
 class PhpRunner
 {
     /**
-     * Create a new PHP runner instance.
+     * The resolved PHP command.
      *
-     * @param  string[]  $command
+     * @var string[]|null
+     */
+    protected ?array $command = null;
+
+    /**
+     * Create a new PHP runner instance.
      */
     public function __construct(
-        protected string $projectPath,
-        protected array $command,
+        protected Workspace $workspace,
     ) {}
 
     /**
@@ -21,7 +25,7 @@ class PhpRunner
      */
     public function projectPath(): string
     {
-        return $this->projectPath;
+        return $this->workspace->path();
     }
 
     /**
@@ -30,7 +34,7 @@ class PhpRunner
     public function run(string $code): ?string
     {
         $command = [
-            ...$this->command,
+            ...$this->command(),
             'artisan',
             'tinker',
             '--execute',
@@ -40,7 +44,7 @@ class PhpRunner
         $process = proc_open($command, [
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
-        ], $pipes, $this->projectPath);
+        ], $pipes, $this->projectPath());
 
         if (!is_resource($process)) {
             return null;
@@ -66,6 +70,26 @@ class PhpRunner
         }
 
         return $output !== false ? $output : null;
+    }
+
+    /**
+     * Get the PHP command used to run Laravel scripts.
+     *
+     * @return string[]
+     */
+    public function command(): array
+    {
+        if ($this->command !== null) {
+            return $this->command;
+        }
+
+        $command = $this->workspace->config->phpCommand();
+
+        if ($command !== []) {
+            return $this->command = $command;
+        }
+
+        return $this->command = (new PhpEnvironmentDetector($this->workspace))->command();
     }
 
     /**

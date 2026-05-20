@@ -141,6 +141,8 @@ class Server
 
             $this->handleUnknownRequest($request);
         } catch (Throwable $e) {
+            report($e);
+
             $this->send(JsonRpcResponse::error(
                 isset($jsonRequest) && is_array($jsonRequest) ? ($jsonRequest['id'] ?? null) : null,
                 -32603,
@@ -164,7 +166,13 @@ class Server
      */
     protected function handleInitialize(JsonRpcRequest $request): void
     {
-        $this->workspace = Workspace::fromInitializeRequest($request, $this);
+        $this->workspace = new Workspace(
+            $request->get('rootUri'),
+            $this,
+            new WorkspaceConfiguration($request->collect('initializationOptions')->all()),
+        );
+
+        $composer = json_decode(file_get_contents(__DIR__.'/../../composer.json'), true);
 
         $this->send(JsonRpcResponse::result($request->id(), [
             'capabilities' => [
@@ -184,11 +192,17 @@ class Server
                 'definitionProvider' => true,
                 'hoverProvider'      => true,
             ],
-            'serverInfo' => [
+            'serverInfo' => $info = [
                 'name'    => 'Laravel LSP',
-                'version' => '0.1.0',
+                'version' => $composer['version'],
+            ],
+            'laravel' => $laravel = [
+                'phpEnvironment' => $this->workspace->config->phpEnvironment(),
+                'phpCommand' => $this->workspace->php->command() ?? ['php'],
             ],
         ]));
+
+        info('LSP Server Started.', array_merge($info, $laravel));
     }
 
     /**

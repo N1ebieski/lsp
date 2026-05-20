@@ -37,7 +37,21 @@ class WorkspaceConfiguration
      */
     public function phpCommand(): array
     {
-        return (array) $this->data('phpCommand', ['php']);
+        $command = $this->data('phpCommand', []);
+
+        if (!is_array($command)) {
+            return [];
+        }
+
+        return array_values($command);
+    }
+
+    /**
+     * Get the configured PHP environment.
+     */
+    public function phpEnvironment(): string
+    {
+        return (string) $this->data('phpEnvironment', 'auto');
     }
 
     /**
