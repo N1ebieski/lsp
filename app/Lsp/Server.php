@@ -189,7 +189,7 @@ class Server
                 'codeActionProvider' => [
                     'codeActionKinds' => ['quickfix'],
                 ],
-                'definitionProvider' => true,
+                'definitionProvider' => $request->boolean('initializationOptions.definitionProvider', false),
                 'hoverProvider'      => true,
             ],
             'serverInfo' => $info = [
