@@ -8,8 +8,8 @@ use App\Lsp\Detection\AutocompleteArgument;
 use App\Lsp\Detection\DetectedArgument;
 use App\Lsp\Detection\Pattern;
 use App\Lsp\Features\Support\DocumentMapper;
-use App\Lsp\Support\Uri;
-use App\Lsp\Workspace;
+use App\Lsp\Support\FileUri;
+use App\Lsp\Project;
 use Illuminate\Support\Collection;
 
 class AssetDocumentMapper extends DocumentMapper
@@ -18,7 +18,7 @@ class AssetDocumentMapper extends DocumentMapper
      * Create a new asset document mapper instance.
      */
     public function __construct(
-        protected Workspace $workspace,
+        protected Project $project,
     ) {}
 
     /**
@@ -49,7 +49,7 @@ class AssetDocumentMapper extends DocumentMapper
 
         return [[
             'range'  => $argument->range(),
-            'target' => (string) Uri::fromPath($asset['fullPath']),
+            'target' => (string) FileUri::fromPath($asset['fullPath']),
         ]];
     }
 
@@ -132,6 +132,6 @@ class AssetDocumentMapper extends DocumentMapper
      */
     protected function assets(): Collection
     {
-        return $this->workspace->data->assets()->get();
+        return $this->project->index->assets();
     }
 }

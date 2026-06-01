@@ -4,35 +4,20 @@ declare(strict_types=1);
 
 namespace App\Lsp\Data;
 
-use App\Lsp\Workspace;
+use App\Lsp\Contracts\DataProvider;
+use App\Lsp\Project;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-class Assets extends DataProvider
+class Assets implements DataProvider
 {
     /**
      * Create a new assets provider instance.
      */
-    public function __construct(protected Workspace $workspace)
+    public function __construct(protected Project $project)
     {
-        parent::__construct($workspace->php);
-    }
-
-    /**
-     * Get the assets template to run.
-     */
-    public function template(): string
-    {
-        return '';
-    }
-
-    /**
-     * Parse raw asset data.
-     */
-    public function parse(array $data): Collection
-    {
-        return collect($data);
+        //
     }
 
     /**
@@ -52,19 +37,13 @@ class Assets extends DataProvider
      */
     public function get(): Collection
     {
-        if ($this->loaded) {
-            return $this->data;
-        }
-
-        $public = $this->workspace->path('public');
-
-        $this->loaded = true;
+        $public = $this->project->path('public');
 
         if (!is_dir($public)) {
-            return $this->data = collect();
+            return collect();
         }
 
-        return $this->data = collect(Finder::create()->files()->in($public)->depth('<= 10'))
+        return collect(Finder::create()->files()->in($public)->depth('<= 10'))
             ->reject(fn (SplFileInfo $file): bool => $file->getExtension() === 'php')
             ->map(fn (SplFileInfo $file): array => [
                 'path'     => str_replace('\\', '/', ltrim(str_replace($public, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR)),
