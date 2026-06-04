@@ -21,14 +21,12 @@ jobs:
           persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
         with:
           php-version: "8.2"
-          tools: composer:v2
           extensions: bcmath,calendar,ctype,curl,dba,dom,exif,fileinfo,filter,iconv,mbstring,openssl,pcntl,pdo_mysql,pdo_sqlite,pdo,phar,posix,readline,session,simplexml,sockets,sodium,sqlite3,tokenizer,xml,xmlreader,xmlwriter,zip,zlib
 
       - name: Install dependencies
-        shell: pwsh
         run: |
           composer install --prefer-dist --no-progress --no-dev --quiet
 
@@ -38,9 +36,8 @@ jobs:
           .\spc-windows-x64.exe --version
 
       - name: Build Binary
-        shell: pwsh
         run: |
-          php server app:build --build-version=${{ github.ref_name }} -vvv
+          php server app:build --build-version=${{ github.ref_name }}
 
       - name: Download PHP
         run: |
