@@ -36,25 +36,8 @@ jobs:
           .\spc-windows-x64.exe --version
 
       - name: Build Binary
-        shell: pwsh
         run: |
-          Set-Content -Path .env -Value ''
-
-          php server app:build --build-version=${{ github.ref_name }} -vvv
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Build failed. Searching for generated PHAR files..."
-            Get-ChildItem -Path . -Filter *.phar -Recurse -Force | Select-Object FullName, Length, LastWriteTime
-
-            Write-Host "Repository root contents:"
-            Get-ChildItem -Path . -Force
-
-            if (Test-Path builds) {
-              Write-Host "Builds directory contents:"
-              Get-ChildItem -Path builds -Force
-            }
-
-            exit $LASTEXITCODE
-          }
+          php server app:build --build-version=${{ github.ref_name }}
 
       - name: Download PHP
         run: |
