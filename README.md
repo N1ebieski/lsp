@@ -11,6 +11,20 @@ The Laravel language server provides framework-aware editor features for Laravel
 
 ## Installation
 
+Install Laravel LSP globally with Composer:
+
+```sh
+composer global require laravel/lsp
+```
+
+Make sure Composer's global vendor bin directory is on your `PATH`, then run the server with:
+
+```sh
+laravel-lsp
+```
+
+### From Source
+
 Clone the repository and install dependencies:
 
 ```sh
@@ -61,7 +75,7 @@ mv /path/to/server-vX.Y.Z-arm64-darwin /usr/local/bin/laravel-lsp
 **Configure** - Point your editor or LSP client at the server command:
 
 ```sh
-php /path/to/lsp/server
+laravel-lsp
 ```
 
 **Open Laravel** - Open a Laravel project root in your editor so the server can index routes, views, translations, config, and other project data.
