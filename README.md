@@ -61,7 +61,7 @@ mv /path/to/server-vX.Y.Z-arm64-darwin /usr/local/bin/laravel-lsp
 **Configure** - Point your editor or LSP client at the server command:
 
 ```sh
-php /path/to/lsp/server lsp
+php /path/to/lsp/server
 ```
 
 **Open Laravel** - Open a Laravel project root in your editor so the server can index routes, views, translations, config, and other project data.
