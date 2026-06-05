@@ -93,7 +93,7 @@ Install the [LSP](https://packagecontrol.io/packages/LSP) package, then add a cl
     "clients": {
         "laravel-lsp": {
             "enabled": true,
-            "command": ["php", "/path/to/lsp/server"],
+            "command": ["laravel-lsp"],
             "selector": "embedding.php | text.html.blade"
         }
     }
@@ -106,7 +106,7 @@ With Neovim 0.11+, add a custom LSP configuration:
 
 ```lua
 vim.lsp.config("laravel_lsp", {
-    cmd = { "php", "/path/to/lsp/server" },
+    cmd = { "laravel-lsp" },
     filetypes = { "php", "blade" },
     root_markers = { "artisan", "composer.json", ".git" },
 })
@@ -123,7 +123,7 @@ local configs = require("lspconfig.configs")
 if not configs.laravel_lsp then
     configs.laravel_lsp = {
         default_config = {
-            cmd = { "php", "/path/to/lsp/server" },
+            cmd = { "laravel-lsp" },
             filetypes = { "php", "blade" },
             root_dir = lspconfig.util.root_pattern("artisan", "composer.json", ".git"),
         },
@@ -140,7 +140,7 @@ Cursor supports VS Code extensions, so the simplest setup is to install the Lara
 For local development against this repository, use a VS Code-compatible custom LSP extension or client and point it at:
 
 ```sh
-php /path/to/lsp/server
+laravel-lsp
 ```
 
 ### OpenCode
@@ -152,7 +152,7 @@ Enable LSP support in `opencode.json` and add Laravel LSP as a custom server:
     "$schema": "https://opencode.ai/config.json",
     "lsp": {
         "laravel-lsp": {
-            "command": ["php", "/path/to/lsp/server"],
+            "command": ["laravel-lsp"],
             "extensions": [".php", ".blade.php"]
         }
     }
