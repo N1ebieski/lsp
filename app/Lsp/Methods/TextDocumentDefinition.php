@@ -56,11 +56,7 @@ class TextDocumentDefinition implements Method
                 continue;
             }
 
-            $locationLink = $this->locationLink($link, $range);
-
-            if ($locationLink !== null) {
-                $locationLinks[] = $locationLink;
-            }
+            $locationLinks[] = $this->locationLink($link, $range);
         }
 
         return JsonRpcResponse::result($request->id(), $locationLinks);
@@ -87,17 +83,11 @@ class TextDocumentDefinition implements Method
      *
      * @param  array<string, mixed>  $link
      * @param  array<string, mixed>  $originRange
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    protected function locationLink(array $link, array $originRange): ?array
+    protected function locationLink(array $link, array $originRange): array
     {
-        $target = $link['target'] ?? null;
-
-        if (!is_string($target)) {
-            return null;
-        }
-
-        [$targetUri, $targetRange] = $this->target($target);
+        [$targetUri, $targetRange] = $this->target((string) $link['target']);
 
         return [
             'originSelectionRange' => $originRange,
