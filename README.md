@@ -102,7 +102,7 @@ Install the [LSP](https://packagecontrol.io/packages/LSP) package, then add a cl
 
 ### Neovim
 
-With Neovim 0.11+, add a custom LSP configuration:
+Neovim 0.11+ is required. Add a custom LSP configuration:
 
 ```lua
 vim.lsp.config("laravel_lsp", {
@@ -112,25 +112,6 @@ vim.lsp.config("laravel_lsp", {
 })
 
 vim.lsp.enable("laravel_lsp")
-```
-
-With `nvim-lspconfig`, register the server if it is not already available:
-
-```lua
-local lspconfig = require("lspconfig")
-local configs = require("lspconfig.configs")
-
-if not configs.laravel_lsp then
-    configs.laravel_lsp = {
-        default_config = {
-            cmd = { "laravel-lsp" },
-            filetypes = { "php", "blade" },
-            root_dir = lspconfig.util.root_pattern("artisan", "composer.json", ".git"),
-        },
-    }
-end
-
-lspconfig.laravel_lsp.setup({})
 ```
 
 ### Cursor
