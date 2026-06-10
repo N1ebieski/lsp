@@ -60,13 +60,18 @@ class FileUri implements JsonSerializable
      */
     public function relativePath(string $path): string
     {
-        $basePath = $this->path();
+        $basePath = rtrim(self::normalizePath($this->path()), '/');
+        $normalized = self::normalizePath(realpath($path) ?: $path);
 
-        if (!str_contains($path, $basePath)) {
+        if ($normalized === $basePath) {
+            return '';
+        }
+
+        if ($basePath === '' || !str_starts_with($normalized, $basePath.'/')) {
             return $path;
         }
 
-        return ltrim(str_replace($basePath, '', realpath($path) ?: $path), DIRECTORY_SEPARATOR);
+        return substr($normalized, strlen($basePath) + 1);
     }
 
     /**
@@ -102,6 +107,20 @@ class FileUri implements JsonSerializable
 
         if (preg_match('#^/[A-Za-z]:(?:/|$)#', $path) === 1) {
             return substr($path, 1);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Normalize a filesystem path for comparison across platforms.
+     */
+    protected static function normalizePath(string $path): string
+    {
+        $path = str_replace('\\', '/', $path);
+
+        if (preg_match('/^[A-Za-z]:(?:\/|$)/', $path) === 1) {
+            return strtoupper($path[0]).substr($path, 1);
         }
 
         return $path;

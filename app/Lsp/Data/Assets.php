@@ -46,7 +46,7 @@ class Assets implements DataProvider
         return collect(Finder::create()->files()->in($public)->depth('<= 10'))
             ->reject(fn (SplFileInfo $file): bool => $file->getExtension() === 'php')
             ->map(fn (SplFileInfo $file): array => [
-                'path'     => str_replace('\\', '/', ltrim(str_replace($public, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR)),
+                'path'     => str_replace('\\', '/', $file->getRelativePathname()),
                 'fullPath' => $file->getRealPath() ?: $file->getPathname(),
             ])
             ->values();

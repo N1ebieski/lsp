@@ -60,12 +60,6 @@ class NotifyFileWatchers implements Listener
      */
     public function relativePath(string $path): string
     {
-        $basePath = $this->project->path();
-
-        if (!str_contains($path, $basePath)) {
-            return $path;
-        }
-
-        return ltrim(str_replace($basePath, '', realpath($path) ?: $path), DIRECTORY_SEPARATOR);
+        return $this->project->uri()->relativePath($path);
     }
 }

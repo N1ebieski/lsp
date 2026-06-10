@@ -121,8 +121,8 @@ class InertiaViews implements DataProvider
 
         return collect(Finder::create()->files()->in($absolute))
             ->filter(fn (SplFileInfo $file): bool => $extensions->contains($file->getExtension()))
-            ->map(function (SplFileInfo $file) use ($absolute, $path): array {
-                $relative = ltrim(str_replace($absolute, '', $file->getRealPath() ?: $file->getPathname()), DIRECTORY_SEPARATOR);
+            ->map(function (SplFileInfo $file) use ($path): array {
+                $relative = $file->getRelativePathname();
                 $name = preg_replace('/\.[^.]+$/', '', $relative) ?: $relative;
 
                 return [
