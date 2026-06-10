@@ -98,7 +98,13 @@ class FileUri implements JsonSerializable
      */
     protected function uriPath(): string
     {
-        return rawurldecode((string) parse_url($this->uri, PHP_URL_PATH));
+        $path = rawurldecode((string) parse_url($this->uri, PHP_URL_PATH));
+
+        if (preg_match('#^/[A-Za-z]:(?:/|$)#', $path) === 1) {
+            return substr($path, 1);
+        }
+
+        return $path;
     }
 
     /**
