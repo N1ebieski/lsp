@@ -33,7 +33,7 @@ class Routes implements DataProvider
     public function patterns(): array
     {
         return [
-            '**/{[Rr]oute}{,s}{.php,/*.php,/**/*.php}',
+            '**/[Rr]oute{,s}{.php,/*.php,/**/*.php}',
         ];
     }
 }
