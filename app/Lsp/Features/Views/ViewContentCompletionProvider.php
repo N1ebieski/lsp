@@ -59,11 +59,6 @@ class ViewContentCompletionProvider implements CompletionProvider
      */
     protected function isViewArgument(AutocompleteArgument $argument): bool
     {
-        info('Checking argument', [
-            'index'    => $argument->argumentIndex(),
-            'children' => $argument->item()['arguments']['children'],
-        ]);
-
         return $argument->isArgumentNamed('view')
             || $argument->isArgumentNamed('markdown')
             || in_array($argument->argumentIndex(), [0, 3], true);
