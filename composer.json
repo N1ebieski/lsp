@@ -23,13 +23,12 @@
         "php": "^8.2.0"
     },
     "require-dev": {
-        "illuminate/log": "^11.5",
-        "laravel-zero/framework": "^11.0.0",
+        "laravel-zero/framework": "^12.0",
         "laravel/pint": "^1.15.2",
         "microsoft/tolerant-php-parser": "^0.1.2",
         "mockery/mockery": "^1.6.11",
-        "pestphp/pest": "^2.34.7",
-        "stillat/blade-parser": "^1.10"
+        "pestphp/pest": "^4.0",
+        "stillat/blade-parser": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -42,7 +41,10 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "exclude-from-classmap": [
+            "tests/snippets/"
+        ]
     },
     "config": {
         "preferred-install": "dist",
