@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Lsp\Server;
 use LaravelZero\Framework\Commands\Command;
+use Throwable;
 
 class LspCommand extends Command
 {
@@ -22,6 +23,16 @@ class LspCommand extends Command
      */
     public function handle(): void
     {
-        Server::stdio()->start();
+        $this->server()->start();
+    }
+
+    /**
+     * Create a new server instance.
+     */
+    protected function server(): Server
+    {
+        return PHP_OS_FAMILY === 'Windows'
+            ? Server::stdio()
+            : Server::asyncStdio();
     }
 }

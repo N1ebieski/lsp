@@ -32,6 +32,7 @@ use App\Lsp\Methods\TextDocumentHover;
 use App\Lsp\Transport\AmpStdioTransport;
 use App\Lsp\Transport\JsonRpcRequest;
 use App\Lsp\Transport\JsonRpcResponse;
+use App\Lsp\Transport\StdioTransport;
 use Illuminate\Container\Container;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -91,18 +92,32 @@ final class Server
         protected Transport $transport,
         protected LoggerInterface $logger = new NullLogger,
         protected Container $container = new Container,
+        protected bool $async = true,
     ) {
         $this->registerBaseBindings();
     }
 
     /**
-     * Create a new Stdio Server instance.
+     * Create a new stdio server instance.
      */
     public static function stdio(): static
     {
         return new self(
+            new StdioTransport,
+            new Logger('Laravel LSP', [new StreamHandler('php://stderr')]),
+            async: false,
+        );
+    }
+
+    /**
+     * Create a new async stdio server instance.
+     */
+    public static function asyncStdio(): static
+    {
+        return new self(
             new AmpStdioTransport,
             new Logger('Laravel LSP', [new StreamHandler('php://stderr')]),
+            async: true,
         );
     }
 
@@ -231,14 +246,14 @@ final class Server
      */
     public function dispatchNotification(JsonRpcRequest $request): void
     {
+        if (!$this->async) {
+            $this->handleNotification($request);
+
+            return;
+        }
+
         async(function () use ($request): void {
-            foreach ($this->listeners($request->method()) as $listener) {
-                try {
-                    $listener->handle($request);
-                } catch (Throwable $e) {
-                    $this->container[ExceptionHandler::class]->report($e);
-                }
-            }
+            $this->handleNotification($request);
         });
     }
 
@@ -247,6 +262,12 @@ final class Server
      */
     public function dispatchRequest(JsonRpcRequest $request): void
     {
+        if (!$this->async) {
+            $this->respond($this->handleRequest($request));
+
+            return;
+        }
+
         $deferred = new DeferredCancellation;
 
         $this->cancellations[$request->id()] = $deferred;
@@ -254,17 +275,41 @@ final class Server
 
         async(function () use ($request): void {
             try {
-                $response = $this->handler($request->method())->handle($request);
-            } catch (Throwable $e) {
-                $this->container[ExceptionHandler::class]->report($e);
-
-                $response = $this->container[ExceptionHandler::class]->render($request, $e);
+                $response = $this->handleRequest($request);
             } finally {
                 unset($this->cancellations[$request->id()]);
             }
 
             $this->respond($response);
         });
+    }
+
+    /**
+     * Handle the notification.
+     */
+    protected function handleNotification(JsonRpcRequest $request): void
+    {
+        foreach ($this->listeners($request->method()) as $listener) {
+            try {
+                $listener->handle($request);
+            } catch (Throwable $e) {
+                $this->container[ExceptionHandler::class]->report($e);
+            }
+        }
+    }
+
+    /**
+     * Handle the request and render any exception to a JSON-RPC response.
+     */
+    protected function handleRequest(JsonRpcRequest $request): JsonRpcResponse
+    {
+        try {
+            return $this->handler($request->method())->handle($request);
+        } catch (Throwable $e) {
+            $this->container[ExceptionHandler::class]->report($e);
+
+            return $this->container[ExceptionHandler::class]->render($request, $e);
+        }
     }
 
     /**
