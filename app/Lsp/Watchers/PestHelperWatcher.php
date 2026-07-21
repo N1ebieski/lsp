@@ -259,10 +259,14 @@ class PestHelperWatcher implements FileWatcher
      */
     protected function pestNamespace(string $filePath): string
     {
-        $relative = preg_replace('/^tests[\/\\\\]?/', '', $filePath) ?? '';
-        $segment = $relative !== '' ? str_replace(['/', '\\'], '\\', $relative) : 'Global';
+        $relative = preg_replace(['/^tests[\/\\\\]?/', '/\.php$/i'], '', $filePath) ?? '';
 
-        return "_Pest\\{$segment}";
+        $segments = collect(preg_split('/[\/\\\\]+/', $relative))
+            ->filter()
+            ->map(fn (string $segment): string => preg_replace('/[^A-Za-z0-9_\x80-\xff]/', '_', $segment))
+            ->map(fn (string $segment): string => ctype_digit($segment[0]) ? "_{$segment}" : $segment);
+
+        return '_Pest\\' . ($segments->isEmpty() ? 'Global' : $segments->join('\\'));
     }
 
     /**
