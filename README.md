@@ -24,6 +24,10 @@ Install and configure the official [Laravel Sublime Text extension](https://gith
 
 Install and configure the official [Laravel Zed extension](https://github.com/laravel/zed-extension).
 
+### VS Code
+
+Install and configure the official [Laravel VS Code extension](https://github.com/laravel/vs-code-extension).
+
 ### Cursor
 
 Install and configure the official [Laravel VS Code extension](https://github.com/laravel/vs-code-extension), which is compatible with Cursor.
