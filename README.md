@@ -2,13 +2,6 @@
 
 The Laravel language server provides framework-aware editor features for Laravel applications. It runs over stdio using the Language Server Protocol and powers completions, hovers, diagnostics, document links, definitions, and quick fixes for Laravel and Blade code.
 
-## Requirements
-
-- **PHP 8.2+**
-- **Composer**
-- **Laravel application** - the server indexes framework data from the project root
-- **LSP-compatible editor or client** - such as Sublime Text, Neovim, Cursor, or OpenCode
-
 ## Installation
 
 Install Laravel LSP globally with Composer:
@@ -21,53 +14,6 @@ Make sure Composer's global vendor bin directory is on your `PATH`, then run the
 
 ```sh
 laravel-lsp
-```
-
-### From Source
-
-Clone the repository and install dependencies:
-
-```sh
-gh repo clone laravel/lsp
-cd lsp
-composer install
-```
-
-You can run the server from source with:
-
-```sh
-php server
-```
-
-## Setup Alias
-
-To use the `laravel-lsp` command from anywhere, add an alias to your shell configuration:
-
-**For Zsh (macOS default):**
-
-```sh
-echo 'alias laravel-lsp="php '$(pwd)'/server"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-**For Bash:**
-
-```sh
-echo 'alias laravel-lsp="php '$(pwd)'/server"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Or manually add the alias to your `~/.zshrc` or `~/.bashrc` file:
-
-```sh
-alias laravel-lsp="php /path/to/lsp/server"
-```
-
-If you are using a downloaded standalone binary, make it executable and put it on your `PATH` instead:
-
-```sh
-chmod +x /path/to/server-vX.Y.Z-arm64-darwin
-mv /path/to/server-vX.Y.Z-arm64-darwin /usr/local/bin/laravel-lsp
 ```
 
 ## Quick Start
@@ -86,19 +32,11 @@ The server communicates over stdio. Configure your editor to launch the command 
 
 ### Sublime Text
 
-Install the [LSP](https://packagecontrol.io/packages/LSP) package, then add a client configuration in `Preferences: LSP Settings`:
+Install and configure the official [Laravel Sublime Text extension](https://github.com/laravel/sublime-extension).
 
-```json
-{
-    "clients": {
-        "laravel-lsp": {
-            "enabled": true,
-            "command": ["laravel-lsp"],
-            "selector": "embedding.php | text.html.blade"
-        }
-    }
-}
-```
+### Zed
+
+Install and configure the official [Laravel Zed extension](https://github.com/laravel/zed-extension).
 
 ### Neovim
 
@@ -116,13 +54,7 @@ vim.lsp.enable("laravel_lsp")
 
 ### Cursor
 
-Cursor supports VS Code extensions, so the simplest setup is to install the Laravel extension that bundles or configures Laravel LSP.
-
-For local development against this repository, use a VS Code-compatible custom LSP extension or client and point it at:
-
-```sh
-laravel-lsp
-```
+Install and configure the official [Laravel VS Code extension](https://github.com/laravel/vs-code-extension), which is compatible with Cursor.
 
 ### OpenCode
 
@@ -161,42 +93,53 @@ Enable LSP support in `opencode.json` and add Laravel LSP as a custom server:
 
 ## Configuration
 
-Editor clients pass configuration through LSP `initializationOptions`.
+Editor clients pass configuration through the LSP `initializationOptions` object. All options are optional.
 
-| Option               | Default | Description                                                    |
-| -------------------- | ------- | -------------------------------------------------------------- |
-| `phpEnvironment`     | `auto`  | Detect which PHP environment to use for indexing project data  |
-| `phpCommand`         | auto    | Explicit PHP command array, such as `["php"]` or Sail commands |
-| `definitionProvider` | `false` | Enable definition support when the client should request it    |
+### Server Options
+
+| Option                  | Type       | Default                                 | Description                                                                                              |
+| ----------------------- | ---------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `phpEnvironment`        | `string`   | `"auto"`                                | Select the environment used to detect the PHP command for indexing project data.                         |
+| `phpCommand`            | `string[]` | Detected from `phpEnvironment`          | Use an explicit command and arguments, such as `["php"]` or `["./vendor/bin/sail", "php"]`.              |
+| `definitionProvider`    | `boolean`  | `true`                                  | Advertise definition support to the editor. Definitions are resolved from enabled document link options. |
+| `pestGenerateDocBlocks` | `boolean`  | `true`                                  | Generate Pest helper docblocks and keep them updated when tests or Composer autoload files change.       |
+| `pestHelperFilePath`    | `string`   | `"storage/framework/testing/_pest.php"` | Set the Pest helper output path relative to the Laravel project root.                                    |
 
 The `phpEnvironment` option controls which PHP command is used when the server runs project data scripts. It accepts these values:
 
-| Value   | PHP command behavior                                            |
-| ------- | --------------------------------------------------------------- |
-| `auto`  | Try Herd, Valet, Sail, Lando, DDEV, then local PHP              |
-| `herd`  | Use `herd which-php`                                            |
-| `valet` | Use `valet which-php`                                           |
-| `sail`  | Use `./vendor/bin/sail php` when Sail is running                |
-| `lando` | Use `lando php` when available                                  |
-| `ddev`  | Use `ddev php` when available                                   |
+| Value   | PHP command behavior                                               |
+| ------- | ------------------------------------------------------------------ |
+| `auto`  | Try Herd, Valet, Sail, Lando, DDEV, then local PHP                 |
+| `herd`  | Use `herd which-php`                                               |
+| `valet` | Use `valet which-php`                                              |
+| `sail`  | Use `./vendor/bin/sail php` when Sail is running                   |
+| `lando` | Use `lando php` when available                                     |
+| `ddev`  | Use `ddev php` when available                                      |
 | `local` | Use the local PHP binary resolved from `php -r 'echo PHP_BINARY;'` |
 
 If detection fails, or an unknown value is provided, the server falls back to `php`.
 
-Most feature providers can be enabled or disabled individually by passing boolean initialization options. For example:
+When `phpCommand` is a non-empty array, it takes precedence over `phpEnvironment`.
 
-```json
-{
-    "routeCompletion": true,
-    "routeDiagnostics": true,
-    "viewDiagnostics": false,
-    "translationHover": true
-}
-```
+### Feature Options
 
-Common feature option suffixes are `Completion`, `Diagnostics`, `Hover`, and `Link`, such as `routeCompletion`, `configDiagnostics`, `envHover`, or `bladeComponentLink`.
+Every feature option is a boolean and defaults to `true`. Set an option to `false` to disable that capability for the corresponding Laravel feature.
 
-## Links
-
-- [Laravel](https://laravel.com)
-- [Laravel LSP source](https://github.com/laravel/lsp)
+| Feature               | Completion                    | Diagnostics                   | Hover                    | Document links          | Code actions      |
+| --------------------- | ----------------------------- | ----------------------------- | ------------------------ | ----------------------- | ----------------- |
+| Application bindings  | `appBindingCompletion`        | `appBindingDiagnostics`       | `appBindingHover`        | `appBindingLink`        | —                 |
+| Assets                | `assetCompletion`             | `assetDiagnostics`            | —                        | `assetLink`             | —                 |
+| Authorization         | `authCompletion`              | `authDiagnostics`             | `authHover`              | `authLink`              | —                 |
+| Blade components      | `bladeComponentCompletion`    | —                             | `bladeComponentHover`    | `bladeComponentLink`    | —                 |
+| Config                | `configCompletion`            | `configDiagnostics`           | `configHover`            | `configLink`            | —                 |
+| Controller actions    | `controllerActionCompletion`  | `controllerActionDiagnostics` | —                        | `controllerActionLink`  | —                 |
+| Environment variables | `envCompletion`               | `envDiagnostics`              | `envHover`               | `envLink`               | `envViteQuickFix` |
+| Inertia               | `inertiaCompletion`           | `inertiaDiagnostics`          | `inertiaHover`           | `inertiaLink`           | —                 |
+| Livewire components   | `livewireComponentCompletion` | —                             | `livewireComponentHover` | `livewireComponentLink` | —                 |
+| Middleware            | `middlewareCompletion`        | `middlewareDiagnostics`       | `middlewareHover`        | `middlewareLink`        | —                 |
+| Mix assets            | `mixCompletion`               | `mixDiagnostics`              | `mixHover`               | `mixLink`               | —                 |
+| Path helpers          | —                             | —                             | —                        | `pathsLink`             | —                 |
+| Routes                | `routeCompletion`             | `routeDiagnostics`            | `routeHover`             | `routeLink`             | —                 |
+| Storage disks         | `storageCompletion`           | `storageDiagnostics`          | —                        | `storageLink`           | —                 |
+| Translations          | `translationCompletion`       | `translationDiagnostics`      | `translationHover`       | `translationLink`       | —                 |
+| Views                 | `viewCompletion`              | `viewDiagnostics`             | `viewHover`              | `viewLink`              | —                 |
