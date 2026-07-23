@@ -10,21 +10,7 @@ Install Laravel LSP globally with Composer:
 composer global require laravel/lsp
 ```
 
-Make sure Composer's global vendor bin directory is on your `PATH`, then run the server with:
-
-```sh
-laravel-lsp
-```
-
-## Quick Start
-
-**Configure** - Point your editor or LSP client at the server command:
-
-```sh
-laravel-lsp
-```
-
-**Open Laravel** - Open a Laravel project root in your editor so the server can index routes, views, translations, config, and other project data.
+Make sure Composer's global vendor bin directory is on your `PATH`.
 
 ## Editor Usage
 
@@ -37,6 +23,10 @@ Install and configure the official [Laravel Sublime Text extension](https://gith
 ### Zed
 
 Install and configure the official [Laravel Zed extension](https://github.com/laravel/zed-extension).
+
+### Cursor
+
+Install and configure the official [Laravel VS Code extension](https://github.com/laravel/vs-code-extension), which is compatible with Cursor.
 
 ### Neovim
 
@@ -51,10 +41,6 @@ vim.lsp.config("laravel_lsp", {
 
 vim.lsp.enable("laravel_lsp")
 ```
-
-### Cursor
-
-Install and configure the official [Laravel VS Code extension](https://github.com/laravel/vs-code-extension), which is compatible with Cursor.
 
 ### OpenCode
 
