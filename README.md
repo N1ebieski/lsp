@@ -1,4 +1,4 @@
-# Laravel LSP
+## Introduction
 
 The Laravel language server provides framework-aware editor features for Laravel applications. It runs over stdio using the Language Server Protocol and powers completions, hovers, diagnostics, document links, definitions, and quick fixes for Laravel and Blade code.
 
@@ -133,3 +133,27 @@ Every feature option is a boolean and defaults to `true`. Set an option to `fals
 | Storage disks         | `storageCompletion`           | `storageDiagnostics`          | —                        | `storageLink`           | —                 |
 | Translations          | `translationCompletion`       | `translationDiagnostics`      | `translationHover`       | `translationLink`       | —                 |
 | Views                 | `viewCompletion`              | `viewDiagnostics`             | `viewHover`              | `viewLink`              | —                 |
+
+## Supported Platforms
+
+The following platforms are supported:
+
+- macOS arm64 and x64
+- Linux arm64 and x64
+- Windows x64
+
+## Contributing
+
+Thank you for considering contributing to the Laravel Sublime Text extension! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+Please review [our security policy](https://github.com/laravel/sublime-extension/security/policy) on how to report security vulnerabilities.
+
+## License
+
+The Laravel Sublime Text extension is open-sourced software licensed under the [MIT license](https://opensource.org/license/mit).
