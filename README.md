@@ -144,7 +144,7 @@ The following platforms are supported:
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel Sublime Text extension! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Thank you for considering contributing to Laravel LSP! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
 ## Code of Conduct
 
@@ -152,8 +152,8 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 ## Security Vulnerabilities
 
-Please review [our security policy](https://github.com/laravel/sublime-extension/security/policy) on how to report security vulnerabilities.
+Please review [our security policy](https://github.com/laravel/lsp/security/policy) on how to report security vulnerabilities.
 
 ## License
 
-The Laravel Sublime Text extension is open-sourced software licensed under the [MIT license](https://opensource.org/license/mit).
+Laravel LSP is open-sourced software licensed under the [MIT license](https://opensource.org/license/mit).
