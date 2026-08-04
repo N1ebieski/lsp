@@ -1,6 +1,6 @@
 ## Introduction
 
-The Laravel language server provides framework-aware editor features for Laravel applications. It powers code completions, hover information, diagnostics, document links, go-to definition, and quick fixes for Laravel and Blade code.
+Laravel LSP provides framework-aware editor features for Laravel applications, including completions, hover information, diagnostics, document links, Go to Definition, and code actions for Laravel and Blade code.
 
 ## Installation
 
@@ -10,11 +10,11 @@ Install Laravel LSP globally with Composer:
 composer global require laravel/lsp
 ```
 
-Make sure Composer's global vendor bin directory is on your `PATH`.
+Ensure Composer's global bin directory is on your `PATH`.
 
 ## Editor Usage
 
-The server communicates over stdio. Configure your editor to launch the command from the Laravel project root whenever possible.
+The server communicates over stdio. Configure your editor to launch it from the Laravel project root whenever possible.
 
 ### Sublime Text
 
@@ -64,22 +64,22 @@ Enable LSP support in `opencode.json` and add Laravel LSP as a custom server:
 
 ## Features
 
-| Area                  | Capabilities                                      |
-| --------------------- | ------------------------------------------------- |
-| Routes                | Completions, hovers, diagnostics, document links  |
-| Views and Blade       | Completions, hovers, diagnostics, links, fixes    |
-| Translations          | Key, locale, and parameter completions; hovers    |
-| Config                | Key completions, hovers, diagnostics, links       |
-| Environment variables | Completions, hovers, diagnostics, links, fixes    |
-| Assets and Mix        | Completions, hovers, diagnostics, links           |
-| Middleware            | Completions, hovers, diagnostics, links           |
-| Inertia               | Page and property completions, links, diagnostics |
-| Livewire components   | Completions, hovers, links                        |
-| Auth and policies     | Completions, hovers, diagnostics, links           |
-| Container bindings    | Completions, hovers, diagnostics, links           |
-| Validation rules      | Completions                                       |
-| Controller actions    | Completions, diagnostics, links                   |
-| Eloquent              | Completions                                       |
+| Area                  | Capabilities                                                |
+| --------------------- | ----------------------------------------------------------- |
+| Routes                | Completions, hovers, diagnostics, document links            |
+| Views and Blade       | Completions, hovers, diagnostics, document links, code actions |
+| Translations          | Key, locale, and parameter completions; hovers               |
+| Config                | Key completions, hovers, diagnostics, document links         |
+| Environment variables | Completions, hovers, diagnostics, document links, code actions |
+| Assets and Mix        | Completions, hovers, diagnostics, document links             |
+| Middleware            | Completions, hovers, diagnostics, document links             |
+| Inertia               | Page and property completions, diagnostics, document links, code actions |
+| Livewire components   | Completions, hovers, document links                          |
+| Auth and policies     | Completions, hovers, diagnostics, document links             |
+| Container bindings    | Completions, hovers, diagnostics, document links             |
+| Validation rules      | Completions                                                 |
+| Controller actions    | Completions, diagnostics, document links                     |
+| Eloquent              | Completions                                                 |
 
 ## Configuration
 
@@ -113,7 +113,7 @@ When `phpCommand` is a non-empty array, it takes precedence over `phpEnvironment
 
 ### Feature Options
 
-Every feature option is a boolean and defaults to `true`. Set an option to `false` to disable that capability for the corresponding Laravel feature.
+Every feature option is a boolean that defaults to `true`. Set an option to `false` to disable the corresponding capability.
 
 | Feature               | Completion                    | Diagnostics                   | Hover                    | Document links          | Code actions      |
 | --------------------- | ----------------------------- | ----------------------------- | ------------------------ | ----------------------- | ----------------- |
@@ -148,12 +148,12 @@ Thank you for considering contributing to Laravel LSP! The contribution guide ca
 
 ## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+To help keep the Laravel community welcoming to all, please review and follow the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
 ## Security Vulnerabilities
 
-Please review [our security policy](https://github.com/laravel/lsp/security/policy) on how to report security vulnerabilities.
+See [our security policy](https://github.com/laravel/lsp/security/policy) for information on reporting security vulnerabilities.
 
 ## License
 
-Laravel LSP is open-sourced software licensed under the [MIT license](https://opensource.org/license/mit).
+Laravel LSP is open-source software licensed under the [MIT license](https://opensource.org/license/mit).
