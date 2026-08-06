@@ -1,11 +1,18 @@
 <?php
 
-function vsCodeGetReflectionMethod(ReflectionClass $reflected): ReflectionMethod
+function getReflectionMethod(ReflectionClass $reflected): ReflectionMethod
 {
     return match (true) {
         $reflected->hasMethod('__invoke') => $reflected->getMethod('__invoke'),
         default                           => $reflected->getMethod('handle'),
     };
+}
+
+function getMethodLine(ReflectionClass $reflected, ReflectionMethod $method): ?int
+{
+    return $method->getFileName() === $reflected->getFileName()
+        ? $method->getStartLine()
+        : null;
 }
 
 echo collect(app("Illuminate\Contracts\Http\Kernel")->getMiddlewareGroups())
@@ -31,14 +38,12 @@ echo collect(app("Illuminate\Contracts\Http\Kernel")->getMiddlewareGroups())
                 }
 
                 $reflected = new ReflectionClass($m);
-                $reflectedMethod = vsCodeGetReflectionMethod($reflected);
+                $reflectedMethod = getReflectionMethod($reflected);
 
                 return [
                     'class' => $m,
                     'path'  => LspHelper::relativePath($reflected->getFileName()),
-                    'line'  => $reflectedMethod->getFileName() === $reflected->getFileName()
-                        ? $reflectedMethod->getStartLine()
-                        : null,
+                    'line'  => getMethodLine($reflected, $reflectedMethod),
                 ];
             })->all();
 
@@ -46,12 +51,12 @@ echo collect(app("Illuminate\Contracts\Http\Kernel")->getMiddlewareGroups())
         }
 
         $reflected = new ReflectionClass($middleware);
-        $reflectedMethod = vsCodeGetReflectionMethod($reflected);
+        $reflectedMethod = getReflectionMethod($reflected);
 
         $result = array_merge($result, [
             'class' => $middleware,
             'path'  => LspHelper::relativePath($reflected->getFileName()),
-            'line'  => $reflectedMethod->getStartLine(),
+            'line'  => getMethodLine($reflected, $reflectedMethod),
         ]);
 
         $parameters = collect($reflectedMethod->getParameters())
