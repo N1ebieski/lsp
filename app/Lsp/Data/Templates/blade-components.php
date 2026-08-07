@@ -49,7 +49,13 @@ $components = new class
             return $codeBlock;
         }
 
-        return $props->values()->filter()->flatMap(fn ($i) => $i);
+        return $props->values()
+            ->filter()
+            ->flatMap(fn ($i) => $i)
+            ->map(fn ($i) => array_key_exists('default', $i)
+                ? array_merge($i, ['default' => LspHelper::formatDefaultValue($i['default'])])
+                : $i
+            );
     }
 
     protected function getStandardViews()
