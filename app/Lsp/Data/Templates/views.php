@@ -120,9 +120,18 @@ $livewire = new class
         }, array_keys($component->all()));
     }
 
-    protected function formatDefaultValue(mixed $value)
+    protected function formatDefaultValue(mixed $value): mixed
     {
-        return is_string($value) ? "'{$value}'" : $value;
+        return match (true) {
+            is_array($value) => 'array(...)',
+            $value instanceof UnitEnum => get_class($value) . '::' . $value->name,
+            $value instanceof Closure => 'Closure',
+            is_object($value) => get_class($value),
+            is_string($value) => var_export($value, true),
+            is_null($value) => 'null',
+            is_bool($value) => $value ? 'true' : 'false',
+            default => $value,
+        };
     }
 
     protected function key(array $view): string
