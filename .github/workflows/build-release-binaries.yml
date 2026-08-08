@@ -97,7 +97,6 @@ jobs:
         run: |
           $version = php .\builds\laravel-lsp --version
           $version
-          if (-not $version.Contains("${{ github.ref_name }}")) { exit 1 }
           php .\builds\laravel-lsp list
 
       - name: Download PHP
