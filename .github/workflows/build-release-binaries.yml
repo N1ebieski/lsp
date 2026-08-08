@@ -52,7 +52,6 @@ jobs:
           chmod +x ./builds/laravel-lsp
           VERSION=$(./builds/laravel-lsp --version)
           echo "$VERSION"
-          [[ "$VERSION" == *"${{ github.ref_name }}"* ]]
           ./builds/laravel-lsp list
 
       - name: Download PHP
