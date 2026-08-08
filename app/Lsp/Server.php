@@ -12,7 +12,7 @@ use App\Lsp\Exceptions\Handler;
 use App\Lsp\Exceptions\InvalidRequestException;
 use App\Lsp\Exceptions\MethodNotFoundException;
 use App\Lsp\Exceptions\ParseException;
-use App\Lsp\Exceptions\ServerNotInitializedException;
+use App\Lsp\Exceptions\ProjectNotFoundException;
 use App\Lsp\Listeners\CancelRequest;
 use App\Lsp\Listeners\ClearDocumentDiagnostics;
 use App\Lsp\Listeners\CloseDocument;
@@ -92,6 +92,7 @@ final class Server
         protected Transport $transport,
         protected LoggerInterface $logger = new NullLogger,
         protected Container $container = new Container,
+        protected ProjectContext $context = new ProjectContext,
     ) {
         $this->registerBaseBindings();
     }
@@ -148,7 +149,21 @@ final class Server
             return;
         }
 
-        $this->transport->dispatch($request, $this->dispatch(...));
+        try {
+            $project = $this->resolveProject($request);
+        } catch (ProjectNotFoundException $e) {
+            $this->cancel($request->id());
+
+            return;
+        }
+
+        $this->transport->dispatch(
+            $request,
+            fn (JsonRpcRequest $request) => $this->context->run(
+                $project,
+                fn () => $this->dispatch($request),
+            ),
+        );
     }
 
     /**
@@ -339,15 +354,39 @@ final class Server
      */
     protected function registerBaseBindings(): void
     {
+        $this->container->singleton(ProjectContext::class);
+
         $this->container->instance(Container::class, $this->container);
         $this->container->instance(Server::class, $this);
         $this->container->instance(Transport::class, $this->transport);
         $this->container->instance(LoggerInterface::class, $this->logger);
+        $this->container->instance(ProjectContext::class, $this->context);
+
+        $this->container->bind(
+            Project::class,
+            fn (): Project => $this->context->current(),
+        );
 
         $this->container->singletonIf(DocumentManager::class);
         $this->container->singletonIf(ExceptionHandler::class, Handler::class);
 
-        $this->container->singletonIf(Project::class, fn () => throw new ServerNotInitializedException);
+        $this->container->singletonIf(Projects::class, fn () => new Projects());
         $this->container->singletonIf(FeatureRegistry::class);
+    }
+
+    /**
+     * Resolve the project for the given request.
+     */
+    protected function resolveProject(JsonRpcRequest $request): ?Project
+    {
+        $uri = $request->get('textDocument.uri');
+
+        if ($uri === null) {
+            return null;
+        }
+
+        $projects = $this->container->make(Projects::class);
+
+        return $projects->get($uri);
     }
 }

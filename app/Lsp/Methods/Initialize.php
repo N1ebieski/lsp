@@ -6,9 +6,12 @@ namespace App\Lsp\Methods;
 
 use App\Lsp\Contracts\ExceptionHandler;
 use App\Lsp\Contracts\Method;
+use App\Lsp\Exceptions\ProjectNotFoundException;
 use App\Lsp\PhpCommandDetector;
 use App\Lsp\Project;
+use App\Lsp\ProjectContext;
 use App\Lsp\ProjectIndex;
+use App\Lsp\Projects;
 use App\Lsp\ScriptRunner;
 use App\Lsp\Support\FileUri;
 use App\Lsp\Transport\JsonRpcRequest;
@@ -24,6 +27,7 @@ final class Initialize implements Method
     public function __construct(
         protected Container $container,
         protected LoggerInterface $logger,
+        protected ProjectContext $context,
     ) {}
 
     /**
@@ -31,28 +35,50 @@ final class Initialize implements Method
      */
     public function handle(JsonRpcRequest $request): JsonRpcResponse
     {
-        $rootUri = $request->get('rootUri');
+        $this->container->singleton(Projects::class);
 
-        if (!is_string($rootUri) || $rootUri === '') {
-            return JsonRpcResponse::error($request->id(), -32602, 'Initialize request must include a workspace root URI.');
+        $projects = [];
+
+        $workspaceFolders = $request->array('workspaceFolders') ?? [
+            ['uri' => $request->get('rootUri')]
+        ];
+
+        foreach ($workspaceFolders as $workspaceFolder) {
+            $rootUri = $workspaceFolder['uri'] ?? null;
+
+            if (!is_string($rootUri) || $rootUri === '') {
+                continue;
+            }
+
+            $uri = FileUri::of($rootUri);
+
+            if (!file_exists($uri->path('artisan'))) {
+                continue;
+            }
+
+            $projects[] = new Project(
+                $uri,
+                $request->array('initializationOptions'),
+                new ProjectIndex($this->container),
+                new ScriptRunner($uri->path(), $this->phpCommand($request, $uri)),
+            );
         }
 
-        $uri = FileUri::of($rootUri);
-
-        if (!file_exists($uri->path('artisan'))) {
-            return JsonRpcResponse::error($request->id(), -32602, 'Initialize request root URI must be a Laravel project.');
+        if ($projects === []) {
+            return JsonRpcResponse::error($request->id(), -32602, 'Initialize request must include at least one Laravel project.');
         }
 
-        $this->container->singleton(Project::class);
+        $projects = new Projects(...$projects);
 
-        $project = new Project(
-            $uri,
-            $request->array('initializationOptions'),
-            new ProjectIndex($this->container),
-            new ScriptRunner($uri->path(), $this->phpCommand($request, $uri)),
-        );
+        $this->container->instance(Projects::class, $projects);
 
-        $this->container->instance(Project::class, $project);
+        try {
+            $project = $projects->get($request->get('rootUri'));
+        } catch (ProjectNotFoundException $e) {
+            return $e->toResponse($request);
+        }
+
+        $this->context->setDefault($project);
 
         $this->logger->info('Initialized Laravel LSP.', [
             'rootUri'               => (string) $project->uri,
