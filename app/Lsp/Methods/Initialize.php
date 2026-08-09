@@ -72,11 +72,7 @@ final class Initialize implements Method
 
         $this->container->instance(Projects::class, $projects);
 
-        try {
-            $project = $projects->get($rootUri);
-        } catch (ProjectNotFoundException $e) {
-            return $e->toResponse($request);
-        }
+        $project = $projects->first();
 
         $this->context->setDefault($project);
 

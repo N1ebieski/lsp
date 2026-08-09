@@ -384,7 +384,7 @@ final class Server
      */
     protected function resolveProject(JsonRpcRequest $request): ?Project
     {
-        $uri = $request->get('textDocument.uri');
+        $uri = $request->uri();
 
         if ($uri === null) {
             return null;

@@ -7,6 +7,7 @@ namespace App\Lsp\Listeners;
 use App\Lsp\Contracts\Listener;
 use App\Lsp\FeatureRegistry;
 use App\Lsp\Project;
+use App\Lsp\Projects;
 use App\Lsp\Server;
 use App\Lsp\Transport\JsonRpcRequest;
 
@@ -18,7 +19,7 @@ class RegisterFileWatchers implements Listener
     public function __construct(
         protected Server $server,
         protected FeatureRegistry $features,
-        protected Project $project,
+        protected Projects $projects,
     ) {}
 
     /**
@@ -32,17 +33,26 @@ class RegisterFileWatchers implements Listener
                     'id' => 'file-watching',
                     'method' => 'workspace/didChangeWatchedFiles',
                     'registerOptions' => [
-                        'watchers' => array_map(fn (string $pattern) => [
-                            'globPattern' => [
-                                'baseUri' => $this->project->uri,
-                                'pattern' => $pattern,
-                            ],
-                            'kind' => 7,
-                        ], $this->patterns()),
+                        'watchers' => $this->projects
+                            ->collect()
+                            ->flatMap($this->watchers(...))
+                            ->values()
+                            ->all(),
                     ],
                 ],
             ],
         ]);
+    }
+
+    protected function watchers(Project $project): array
+    {
+        return array_map(fn (string $pattern) => [
+            'globPattern' => [
+                'baseUri' => $project->uri,
+                'pattern' => $pattern,
+            ],
+            'kind' => 7,
+        ], $this->patterns());
     }
 
     /**

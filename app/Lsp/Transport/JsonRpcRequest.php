@@ -6,10 +6,10 @@ namespace App\Lsp\Transport;
 
 use Amp\Cancellation;
 use App\Lsp\Exceptions\RequestCancelledException;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Traits\InteractsWithData;
-
 use function Amp\delay;
+use Illuminate\Support\Arr;
+
+use Illuminate\Support\Traits\InteractsWithData;
 
 class JsonRpcRequest
 {
@@ -75,6 +75,17 @@ class JsonRpcRequest
     public function method(): string
     {
         return $this->method;
+    }
+
+    /**
+     * Get the URI which the request/notification is related to.
+     */
+    public function uri(): ?string
+    {
+        return match ($this->method) {
+            'workspace/didChangeWatchedFiles' => $this->get('changes.0.uri'),
+            default => $this->get('textDocument.uri'),
+        };
     }
 
     /**
