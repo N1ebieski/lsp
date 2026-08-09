@@ -19,6 +19,14 @@ final class ProjectContext
         $this->current = new FiberLocal(static fn (): ?Project => null);
     }
 
+    public function setDefault(Project $project): void
+    {
+        $this->default = $project;
+    }
+
+    /**
+     * Run the given callback within the context of the given project.
+     */
     public function run(?Project $project, Closure $callback): mixed
     {
         $this->current->set($project);
@@ -30,11 +38,11 @@ final class ProjectContext
         }
     }
 
-    public function setDefault(Project $project): void
-    {
-        $this->default = $project;
-    }
-
+    /**
+     * Get the current project.
+     *
+     * @throws ProjectNotFoundException if no project is set and no default project is available.
+     */
     public function current(): Project
     {
         return $this->current->get()
