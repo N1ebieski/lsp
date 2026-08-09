@@ -155,15 +155,7 @@ $livewire = new class
         return collect()
             ->when(
                 $this->isMfc($view),
-                function (Collection $files) use ($view) {
-                    $filePathWithoutExtension = str($view['path'])->replace($this->extensions, '');
-
-                    return $files->merge(
-                        collect($this->extensions)
-                            ->map(fn (string $extension) => $filePathWithoutExtension->append($extension))
-                            ->filter(fn (string $path) => File::exists($path))
-                    );
-                },
+                fn (Collection $files) => $files->merge($this->mfcFiles($view)),
                 fn (Collection $files) => $files->prepend($view['path'])
             )
             ->push($this->classFile($component))
@@ -171,6 +163,15 @@ $livewire = new class
             ->unique()
             ->values()
             ->all();
+    }
+
+    protected function mfcFiles(array $view): Collection
+    {
+        $filePathWithoutExtension = str($view['path'])->replace($this->extensions, '');
+
+        return collect($this->extensions)
+            ->map(fn (string $extension) => $filePathWithoutExtension->append($extension))
+            ->filter(fn (string $path) => File::exists($path));
     }
 
     protected function isMfc(array $view): bool
