@@ -159,10 +159,7 @@ final class Server
 
         $this->transport->dispatch(
             $request,
-            fn (JsonRpcRequest $request) => $this->context->run(
-                $project,
-                fn () => $this->dispatch($request),
-            ),
+            fn (JsonRpcRequest $request) => $this->dispatchInProjectContext($request, $project),
         );
     }
 
@@ -267,6 +264,14 @@ final class Server
     public function dispatchRequest(JsonRpcRequest $request): void
     {
         $this->respond($this->handleRequest($request));
+    }
+
+    /**
+     * Dispatch the request in the context of the given project.
+     */
+    protected function dispatchInProjectContext(JsonRpcRequest $request, ?Project $project): mixed
+    {
+        return $this->context->run($project, fn () => $this->dispatch($request));
     }
 
     /**
