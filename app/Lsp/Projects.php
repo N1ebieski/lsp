@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Lsp;
 
 use App\Lsp\Exceptions\ProjectNotFoundException;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 final class Projects
 {
-    /** @var Project[] */
-    private readonly array $projects;
+    /** @var Collection<int, Project> */
+    private readonly Collection $projects;
 
     public function __construct(Project ...$projects)
     {
-        $this->projects = $projects;
+        $this->projects = collect($projects);
     }
 
     /**
@@ -25,9 +25,18 @@ final class Projects
      */
     public function get(string $uri): Project
     {
-        return Arr::first(
-            $this->projects,
-            fn (Project $project) => Str::startsWith($uri, (string) $project->uri)
-        ) ?? throw new ProjectNotFoundException($uri);
+        return $this->projects
+            ->sortByDesc(fn (Project $project): int => strlen((string) $project->uri))
+            ->first(fn (Project $project): bool => $this->containsUri($project, $uri))
+            ?? throw new ProjectNotFoundException($uri);
+    }
+
+    /**
+     * Determine whether the given project contains the URI.
+     */
+    protected function containsUri(Project $project, string $uri): bool
+    {
+        return $uri === (string) $project->uri
+            || Str::startsWith($uri, Str::finish((string) $project->uri, '/'));
     }
 }
