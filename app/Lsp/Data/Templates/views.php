@@ -117,14 +117,9 @@ $livewire = new class
                 'name'            => $prop,
                 'type'            => (string) $reflection->getType() ?: 'mixed',
                 'hasDefaultValue' => $reflection->hasDefaultValue(),
-                'defaultValue'    => $this->formatDefaultValue($reflection->getDefaultValue()),
+                'defaultValue'    => LspHelper::formatDefaultValue($reflection->getDefaultValue()),
             ];
         }, array_keys($component->all()));
-    }
-
-    protected function formatDefaultValue(mixed $value)
-    {
-        return is_string($value) ? "'{$value}'" : $value;
     }
 
     protected function key(array $view): string
