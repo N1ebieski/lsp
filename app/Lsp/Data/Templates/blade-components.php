@@ -128,15 +128,14 @@ $components = new class
             $reflection = new ReflectionClass($class);
             $parameters = collect($reflection->getConstructor()?->getParameters() ?? [])
                 ->filter(fn ($p) => $p->isPromoted())
-                ->flatMap(fn ($p) => [$p->getName() => $p->isOptional() ? $this->normalizeDefault($p->getDefaultValue()) : null])
-                ->all();
+                ->keyBy(fn ($p) => $p->getName());
 
             $props = collect($reflection->getProperties())
                 ->filter(fn ($p) => $p->isPublic() && $p->getDeclaringClass()->getName() === $class)
                 ->map(fn ($p) => [
-                    'name'    => Str::kebab($p->getName()),
-                    'type'    => (string) ($p->getType() ?? 'mixed'),
-                    'default' => $this->normalizeDefault($p->getDefaultValue() ?? $parameters[$p->getName()] ?? null),
+                    'name' => Str::kebab($p->getName()),
+                    'type' => (string) ($p->getType() ?? 'mixed'),
+                    ...LspHelper::propertyDefault($p, $parameters->get($p->getName())),
                 ]);
 
             [$except, $props] = $props->partition(fn ($p) => $p['name'] === 'except');
@@ -309,17 +308,6 @@ $components = new class
         }
 
         return $components;
-    }
-
-    protected function normalizeDefault($value)
-    {
-        if ($value instanceof UnitEnum) {
-            return $value instanceof BackedEnum
-                ? $value->value
-                : $value::class . '::' . $value->name;
-        }
-
-        return $value;
     }
 
     protected function getNamespacePath($classNamespace)
