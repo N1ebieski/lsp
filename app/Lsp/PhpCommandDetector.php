@@ -62,7 +62,7 @@ class PhpCommandDetector
      */
     protected function herd(): array
     {
-        $output = $this->run(['herd', 'which-php']);
+        $output = $this->run('herd which-php');
 
         if ($output === null || str_contains($output, 'No usable PHP version found')) {
             return ['php'];
@@ -142,9 +142,9 @@ class PhpCommandDetector
     /**
      * Run a command in the workspace path.
      *
-     * @param  string[]  $command
+     * @param  string|string[]  $command
      */
-    protected function run(array $command): ?string
+    protected function run(string|array $command): ?string
     {
         try {
             $process = @proc_open($command, [
