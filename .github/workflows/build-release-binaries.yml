@@ -101,8 +101,8 @@ jobs:
 
       - name: Download PHP
         run: |
-          curl -L -O https://dl.static-php.dev/static-php-cli/windows/spc-max/php-8.3.9-micro-win.zip
-          tar -xf php-8.3.9-micro-win.zip
+          curl -L -O https://dl.static-php.dev/static-php-cli/windows/spc-max/php-8.3.30-micro-win.zip
+          tar -xf php-8.3.30-micro-win.zip
           mkdir -p buildroot/bin
           mv micro.sfx buildroot/bin
 
