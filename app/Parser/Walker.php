@@ -17,19 +17,16 @@ class Walker
 
     protected $depth = 0;
 
-    protected string $document;
-
     protected SourceFileNode $sourceFile;
 
     protected $postArgumentParsingCallback = null;
 
     protected $nextNodeToWalk = null;
 
-    public function __construct(string $document, $debug = false)
+    public function __construct(protected string $document, $debug = false)
     {
         $this->debug = $debug;
-        $this->document = $this->normalizeDocument($document);
-        $this->sourceFile = (new Parser)->parseSourceFile($this->document);
+        $this->sourceFile = (new Parser)->parseSourceFile($this->normalizeDocument($document));
         $this->context = new Context;
     }
 
