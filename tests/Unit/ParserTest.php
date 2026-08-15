@@ -4,7 +4,7 @@ use App\Parser\Walker;
 
 function fromFile($file)
 {
-    return file_get_contents(__DIR__ . '/../snippets/' . $file . '.php');
+    return file_get_contents(__DIR__ . '/../../snippets/' . $file . '.php');
 }
 
 function createContext($values)
@@ -728,3 +728,25 @@ test('this reference', function () {
 });
 
 test('object instantiation')->todo();
+
+test('directive can', function () {
+    expect(contextResult('directive-can'))->toBe(createContext([
+        [
+            'type'     => 'blade',
+            'children' => [
+                [
+                    'type'           => 'methodCall',
+                    'autocompleting' => true,
+                    'methodName'     => '@can',
+                    'className'      => null,
+                    'arguments'      => [
+                        'type'                => 'arguments',
+                        'autocompletingIndex' => 0,
+                        'children'            => [],
+                    ],
+                    'children'       => [],
+                ]
+            ]
+        ]
+    ]));
+});
