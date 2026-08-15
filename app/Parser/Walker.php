@@ -17,16 +17,19 @@ class Walker
 
     protected $depth = 0;
 
+    protected string $document;
+
     protected SourceFileNode $sourceFile;
 
     protected $postArgumentParsingCallback = null;
 
     protected $nextNodeToWalk = null;
 
-    public function __construct(protected string $document, $debug = false)
+    public function __construct(string $document, $debug = false)
     {
         $this->debug = $debug;
-        $this->sourceFile = (new Parser)->parseSourceFile(trim($this->document));
+        $this->document = $this->normalizeDocument($document);
+        $this->sourceFile = (new Parser)->parseSourceFile($this->document);
         $this->context = new Context;
     }
 
@@ -49,6 +52,31 @@ class Walker
         return false;
     }
 
+    /**
+     * If a last character is a double quote, for example:
+     *
+     * {{ config("
+     *
+     * then Microsoft\PhpParser\Parser::parseSourceFile returns autocompletingIndex: 1
+     * instead 0. Probably the parser turns the string into something like this:
+     *
+     * "{{ config(";"
+     *
+     * and returns ";" as an argument.
+     *
+     * This line of code checks if the last character is a double quote and fixes it.
+     */
+    protected function normalizeDocument(string $document): string
+    {
+        $document = trim($document);
+
+        if (str_ends_with($document, '"')) {
+            return substr($document, 0, -1) . "'";
+        }
+
+        return $document;
+    }
+
     public function walk()
     {
         Settings::reset();
@@ -59,8 +87,6 @@ class Walker
 
         Parse::$debug = $this->debug;
 
-        $parsed = Parse::parse($this->sourceFile);
-
-        return $parsed;
+        return Parse::parse($this->sourceFile);
     }
 }
