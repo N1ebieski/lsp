@@ -4,7 +4,7 @@ use App\Parser\Walker;
 
 function fromFile($file)
 {
-    return file_get_contents(__DIR__ . '/../snippets/' . $file . '.php');
+    return file_get_contents(__DIR__ . '/../../snippets/' . $file . '.php');
 }
 
 function createContext($values)
@@ -728,3 +728,23 @@ test('this reference', function () {
 });
 
 test('object instantiation')->todo();
+
+test('normalizes a trailing quote', function (string $filename) {
+    expect(contextResult($filename))->toBe(createContext([
+        [
+            'type'           => 'methodCall',
+            'autocompleting' => true,
+            'methodName'     => 'config',
+            'className'      => null,
+            'arguments'      => [
+                'type'                => 'arguments',
+                'autocompletingIndex' => 0,
+                'children'            => [],
+            ],
+            'children'       => [],
+        ]
+    ]));
+})->with([
+    'config-with-single-quote',
+    'config-with-double-quote',
+]);
