@@ -758,7 +758,7 @@ describe('blade directives', function () {
         ]));
     });
 
-    test('directive with argument', function () {
+    test('directive with an argument', function () {
         expect(contextResultCode("@include('a.b'"))->toBe(createContext([
             [
                 'type'     => 'blade',
