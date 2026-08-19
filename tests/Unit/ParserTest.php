@@ -736,8 +736,8 @@ test('this reference', function () {
 test('object instantiation')->todo();
 
 describe('autocomplete with quotes', function () {
-    test('function with an argument', function () {
-        expect(contextResultCode('{{ config("app.name"'))->toBe(createContext([]));
+    test('function with an argument', function (string $code) {
+        expect(contextResultCode($code))->toBe(createContext([]));
     })->with([
         '{{ config("app.name"',
         "{{ config('app.name'",
