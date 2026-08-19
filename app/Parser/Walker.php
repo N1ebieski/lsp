@@ -34,8 +34,8 @@ class Walker
     {
         if (count($this->sourceFile->statementList) === 1 && $this->sourceFile->statementList[0] instanceof InlineHtml) {
             // Probably Blade...
-            $lastChar = substr($this->sourceFile->getFullText(), -1);
-            $closesWithQuote = in_array($lastChar, ['"', "'"]);
+            $lastChar = substr($this->document, -1);
+            $closesWithQuote = in_array($lastChar, ['"', "'"]) && substr_count($this->document, $lastChar) % 2 === 1;
 
             return $closesWithQuote;
         }

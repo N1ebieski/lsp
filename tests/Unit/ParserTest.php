@@ -4,7 +4,7 @@ use App\Parser\Walker;
 
 function fromFile($file)
 {
-    return file_get_contents(__DIR__ . '/../../snippets/' . $file . '.php');
+    return file_get_contents(__DIR__ . '/../snippets/' . $file . '.php');
 }
 
 function createContext($values)
@@ -35,6 +35,12 @@ function contextFromArray($values)
 function contextResult($file, $dump = false)
 {
     $code = fromFile($file);
+
+    return contextResultCode($code, $dump);
+}
+
+function contextResultCode($code, $dump = false)
+{
     $walker = new Walker($code, true);
 
     $context = $walker->walk();
@@ -729,22 +735,58 @@ test('this reference', function () {
 
 test('object instantiation')->todo();
 
-test('normalizes a trailing quote', function (string $filename) {
-    expect(contextResult($filename))->toBe(createContext([
-        [
-            'type'           => 'methodCall',
-            'autocompleting' => true,
-            'methodName'     => 'config',
-            'className'      => null,
-            'arguments'      => [
-                'type'                => 'arguments',
-                'autocompletingIndex' => 0,
-                'children'            => [],
-            ],
-            'children'       => [],
-        ]
-    ]));
-})->with([
-    'config-with-single-quote',
-    'config-with-double-quote',
-]);
+describe('autocomplete with quotes', function () {
+    test('function with an argument', function () {
+        expect(contextResultCode('{{ config("app.name"'))->toBe(createContext([]));
+    })->with([
+        '{{ config("app.name"',
+        "{{ config('app.name'",
+        '<?php config("app.name"',
+        "<?php config('app.name'",
+    ]);
+
+    test('function with an opening quote in blade', function (string $code) {
+        expect(contextResultCode($code))->toBe(createContext([
+            [
+                'type'     => 'blade',
+                'children' => [
+                    [
+                        'type'           => 'methodCall',
+                        'autocompleting' => true,
+                        'methodName'     => 'config',
+                        'className'      => null,
+                        'arguments'      => [
+                            'type'                => 'arguments',
+                            'autocompletingIndex' => 0,
+                            'children'            => [],
+                        ],
+                        'children'       => [],
+                    ],
+                ],
+            ]
+        ]));
+    })->with([
+        '{{ config("',
+        "{{ config('",
+    ]);
+
+    test('function with an opening quote', function (string $code) {
+        expect(contextResultCode($code))->toBe(createContext([
+            [
+                'type'           => 'methodCall',
+                'autocompleting' => true,
+                'methodName'     => 'config',
+                'className'      => null,
+                'arguments'      => [
+                    'type'                => 'arguments',
+                    'autocompletingIndex' => 0,
+                    'children'            => [],
+                ],
+                'children'       => [],
+            ]
+        ]));
+    })->with([
+        '<?php config("',
+        "<?php config('",
+    ]);
+});
