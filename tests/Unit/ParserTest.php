@@ -794,7 +794,7 @@ describe('blade directives', function () {
     test('basic directive', function (string $code) {
         expect(contextResultCode($code))->toBe(createContext([]));
     })->with([
-        'csrf' => ['@csrf'],
+        'csrf'  => ['@csrf'],
         'endif' => ['@endif'],
     ]);
 });
