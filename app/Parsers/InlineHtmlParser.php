@@ -192,7 +192,7 @@ class InlineHtmlParser extends AbstractParser
     protected function isOpeningDirective(DirectiveNode $node): bool
     {
         return $node->hasArguments() || Str::startsWith(
-            $node->getNextNode()?->toString(),
+            $node->getNextNode()?->toString() ?? '',
             $this->openingDirectiveStrings
         );
     }
