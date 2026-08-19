@@ -39,7 +39,7 @@ function contextResult($file, $dump = false)
     return contextResultCode($code, $dump);
 }
 
-function contextResultCode(string $code, $dump = false)
+function contextResultCode($code, $dump = false)
 {
     $walker = new Walker($code, true);
 
@@ -794,7 +794,7 @@ describe('blade directives', function () {
     test('basic directive', function (string $code) {
         expect(contextResultCode($code))->toBe(createContext([]));
     })->with([
-        'csrf'  => ['@csrf'],
-        'endif' => ['@endif'],
+        '@csrf',
+        '@endif',
     ]);
 });
