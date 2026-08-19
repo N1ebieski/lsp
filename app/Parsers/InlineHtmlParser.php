@@ -6,6 +6,7 @@ use App\Contexts\AbstractContext;
 use App\Contexts\Blade;
 use App\Parser\Parse;
 use App\Parser\Settings;
+use Illuminate\Support\Str;
 use Microsoft\PhpParser\Node\Statement\InlineHtml;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\PositionUtilities;
@@ -27,6 +28,9 @@ class InlineHtmlParser extends AbstractParser
      * next to the standard x- components the Blade parser handles natively.
      */
     protected const CUSTOM_COMPONENT_TAGS = ['flux', 'livewire'];
+
+    /** @var string[] */
+    protected array $openingDirectiveStrings = ["('", '("'];
 
     protected $echoStrings = [
         '{!!' => '!!}',
@@ -151,15 +155,11 @@ class InlineHtmlParser extends AbstractParser
 
     protected function parseBladeDirective(DirectiveNode $node)
     {
-        $content = $node->toString();
-
-        if (!$node->hasArguments()) {
-            $content .= "('";
-        }
-
-        if ($node->isClosingDirective) {
+        if ($node->isClosingDirective || ! $this->isOpeningDirective($node)) {
             return;
         }
+
+        $content = $node->toString() . ($node->getNextNode()?->toString() ?? '');
 
         $methodUsed = '@' . $node->content;
         $safetyPrefix = 'directive';
@@ -293,5 +293,13 @@ class InlineHtmlParser extends AbstractParser
         };
 
         $this->doEchoParse($node, $prefix, $node->innerContent);
+    }
+
+    protected function isOpeningDirective(DirectiveNode $node): bool
+    {
+        return $node->hasArguments() || Str::startsWith(
+            $node->getNextNode()?->toString() ?? '',
+            $this->openingDirectiveStrings
+        );
     }
 }
