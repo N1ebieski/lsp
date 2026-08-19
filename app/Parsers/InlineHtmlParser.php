@@ -141,11 +141,15 @@ class InlineHtmlParser extends AbstractParser
 
     protected function parseBladeDirective(DirectiveNode $node)
     {
-        if ($node->isClosingDirective || ! $this->isOpeningDirective($node)) {
+        if (!$this->shouldParseDirective($node)) {
             return;
         }
 
-        $content = $node->toString() . ($node->getNextNode()?->toString() ?? '');
+        $content = $node->toString();
+
+        if ($this->isOpeningDirective($node)) {
+            $content .= $node->getNextNode()?->toString() ?? '';
+        }
 
         $methodUsed = '@' . $node->content;
         $safetyPrefix = 'directive';
@@ -191,9 +195,16 @@ class InlineHtmlParser extends AbstractParser
 
     protected function isOpeningDirective(DirectiveNode $node): bool
     {
-        return $node->hasArguments() || Str::startsWith(
+        return Str::startsWith(
             $node->getNextNode()?->toString() ?? '',
             $this->openingDirectiveStrings
         );
+    }
+
+    protected function shouldParseDirective(DirectiveNode $node): bool
+    {
+        return $node->isClosingDirective
+            || !$node->hasArguments()
+            || !$this->isOpeningDirective($node);
     }
 }
