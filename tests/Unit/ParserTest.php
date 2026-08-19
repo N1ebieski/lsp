@@ -4,7 +4,7 @@ use App\Parser\Walker;
 
 function fromFile($file)
 {
-    return file_get_contents(__DIR__ . '/../../snippets/' . $file . '.php');
+    return file_get_contents(__DIR__ . '/../snippets/' . $file . '.php');
 }
 
 function createContext($values)
@@ -35,6 +35,12 @@ function contextFromArray($values)
 function contextResult($file, $dump = false)
 {
     $code = fromFile($file);
+
+    return contextResultCode($code, $dump);
+}
+
+function contextResultCode(string $code, $dump = false)
+{
     $walker = new Walker($code, true);
 
     $context = $walker->walk();
@@ -729,24 +735,66 @@ test('this reference', function () {
 
 test('object instantiation')->todo();
 
-test('directive can', function () {
-    expect(contextResult('directive-can'))->toBe(createContext([
-        [
-            'type'     => 'blade',
-            'children' => [
-                [
-                    'type'           => 'methodCall',
-                    'autocompleting' => true,
-                    'methodName'     => '@can',
-                    'className'      => null,
-                    'arguments'      => [
-                        'type'                => 'arguments',
-                        'autocompletingIndex' => 0,
-                        'children'            => [],
-                    ],
-                    'children'       => [],
+describe('blade directives', function () {
+    test('opening directive', function () {
+        expect(contextResultCode("@can('"))->toBe(createContext([
+            [
+                'type'     => 'blade',
+                'children' => [
+                    [
+                        'type'           => 'methodCall',
+                        'autocompleting' => true,
+                        'methodName'     => '@can',
+                        'className'      => null,
+                        'arguments'      => [
+                            'type'                => 'arguments',
+                            'autocompletingIndex' => 0,
+                            'children'            => [],
+                        ],
+                        'children'       => [],
+                    ]
                 ]
             ]
-        ]
-    ]));
+        ]));
+    });
+
+    test('directive with argument', function () {
+        expect(contextResultCode("@include('a.b'"))->toBe(createContext([
+            [
+                'type'     => 'blade',
+                'children' => [
+                    [
+                        'type'           => 'methodCall',
+                        'autocompleting' => true,
+                        'methodName'     => '@include',
+                        'className'      => null,
+                        'arguments'      => [
+                            'type'                => 'arguments',
+                            'autocompletingIndex' => 1,
+                            'children'            => [
+                                [
+                                    'type'  => 'argument',
+                                    'name'  => null,
+                                    'children' => [
+                                        [
+                                            'type'  => 'string',
+                                            'value' => 'a.b',
+                                        ],
+                                    ],
+                                ]
+                            ],
+                        ],
+                        'children'       => [],
+                    ]
+                ]
+            ]
+        ]));
+    });
+
+    test('basic directive', function (string $code) {
+        expect(contextResultCode($code))->toBe(createContext([]));
+    })->with([
+        'csrf' => ['@csrf'],
+        'endif' => ['@endif'],
+    ]);
 });
