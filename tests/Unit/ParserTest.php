@@ -736,7 +736,7 @@ test('this reference', function () {
 test('object instantiation')->todo();
 
 describe('blade directives', function () {
-    test('opening directive', function () {
+    test('directive with open quote', function () {
         expect(contextResultCode("@can('"))->toBe(createContext([
             [
                 'type'     => 'blade',
