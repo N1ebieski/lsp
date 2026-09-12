@@ -30,7 +30,7 @@ class InlineHtmlParser extends AbstractParser
     protected const CUSTOM_COMPONENT_TAGS = ['flux', 'livewire'];
 
     /** @var string[] */
-    protected array $openingDirectiveStrings = ["('", '("'];
+    protected array $openQuoteStrings = ["('", '("'];
 
     protected $echoStrings = [
         '{!!' => '!!}',
@@ -161,7 +161,7 @@ class InlineHtmlParser extends AbstractParser
 
         $content = $node->toString();
 
-        if ($this->isOpeningDirective($node)) {
+        if ($this->isDirectiveWithOpenQuote($node)) {
             $content .= $node->getNextNode()?->toString() ?? '';
         }
 
@@ -299,18 +299,18 @@ class InlineHtmlParser extends AbstractParser
         $this->doEchoParse($node, $prefix, $node->innerContent);
     }
 
-    protected function isOpeningDirective(DirectiveNode $node): bool
+    protected function isDirectiveWithOpenQuote(DirectiveNode $node): bool
     {
         return Str::startsWith(
             $node->getNextNode()?->toString() ?? '',
-            $this->openingDirectiveStrings
+            $this->openQuoteStrings
         );
     }
 
     protected function shouldParseDirective(DirectiveNode $node): bool
     {
-        return $node->isClosingDirective
-            || !$node->hasArguments()
-            || !$this->isOpeningDirective($node);
+        return !$node->isClosingDirective
+            || $node->hasArguments()
+            || $this->isDirectiveWithOpenQuote($node);
     }
 }
